@@ -42,9 +42,7 @@ We have to investigate the following questions:
 - What are the actual rate limits in practice?
 - Simple local frontend to test queries and view results
 
-## Architecture
-
-### Tech Stack
+## Tech Stack
 
 Nothing is locked in. Current directions being validated therefore for each layer in bold below the option is "being considered" not final
 
@@ -55,17 +53,26 @@ Nothing is locked in. Current directions being validated therefore for each laye
 - **Writing:** Claude API
 - **Deployment:** Google Cloud
 
-### Environment
+## Environment
 
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
 - [pnpm](https://pnpm.io/) (Node package manager)
 - Python 3.11+
 - Node.js 20+
 
-### Coding Agents
+## Coding Agents
 
-- Cline (VS Code) as primary coding assistant
-- `CLAUDE.md` with Claude Code as secondary
+### Cline (VS Code) - Primary
+
+- [`memory-bank/`](memory-bank): Stores 6 files needed for Cline's memory
+- [`.clineignore`](.clineignore): Files to never take into context
+
+### Claude Code - Planned Later
+
+- `CLAUDE.md`: When initializing later
+
+### Others - Planned Later
+
 - `AGENTS.md` for shared context across tools
 
 ## License
