@@ -1,0 +1,7 @@
+[project]
+name = "oparax-chirp"
+version = "0.1.0"
+description = "AI-powered social media automation for news reporters"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []

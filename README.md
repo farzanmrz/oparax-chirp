@@ -1,62 +1,73 @@
-# chirp-ai
+# 🐦 Oparax Chirp - Social Media Automater
 
-AI-powered social media automation for news reporters.
+## Overview
 
-## About
+**Oparax Chirp** is a tool for professional social media reporters who earn
+revenue from posting and need to catch breaking stories fast. It
+monitors their news sources on X, surfaces what matters, and
+eventually drafts posts in their voice.
 
-Tool for professional social media reporters who earn revenue from 
-posting and need to catch breaking stories fast. Monitors their news 
-sources on X, surfaces what matters, and eventually drafts posts in 
-their voice.
+**Status:** Early development. Currently experimenting with X API v2
+Search Recent Posts endpoint.
 
-First user: Reshad, football news reporter (400k+ X followers, 
-~$1,400/month from social media). Validated before any code was written.
+## Motivation
 
-## Current Focus
+Built around a validated use case of a football news reporter
+with 400k+ followers on X (~$1,400/month from social media), manually
+monitors dozens of accounts and news sources to catch breaking stories
+before competitors. Customer research was conducted before any code
+was written.
 
-Getting hands-on with the X API v2 Search Recent Posts endpoint:
+## Roadmap
+
+The overall vision is:
+
+- **News Intelligence Pipeline:** Monitor followed X accounts,
+  cluster by topic, assess newsworthiness, add website monitoring
+  and research agents
+- **Content Generation Pipeline:** Learn user writing style from
+  past tweets, draft posts in their voice, improve through feedback,
+  eventually enable auto-posting
+
+### Now
+
+Getting hands-on with the X API v2 [Search Recent Posts](https://docs.x.com/x-api/posts/search-recent-posts) endpoint.
+
+We have to investigate the following questions:
+
 - Can we search recent posts by a topic query?
 - Can we filter results to specific X accounts?
-- What do the query operators and annotation filters look like 
+- What do the query operators and annotation filters look like
   for football news?
 - What are the actual rate limits in practice?
 - Simple local frontend to test queries and view results
 
-This is experimentation, not product yet. Learning how the API 
-works, what data comes back, and what's possible.
+## Architecture
 
-## Future Direction
+### Tech Stack
 
-Two pipelines are planned but not yet being built:
+Nothing is locked in. Current directions being validated therefore for each layer in bold below the option is "being considered" not final
 
-**News Intelligence:** Pull who the user follows on X, understand 
-why (cluster by topic), monitor those accounts for breaking news, 
-assess newsworthiness. Later: add website monitoring and research 
-agents (Grok search, Perplexity, Gemini grounding, Exa, etc.).
+- **Frontend:** Next.js
+- **Auth / DB:** Supabase
+- **Social API:** X API v2
+- **Intelligence:** Grok API
+- **Writing:** Claude API
+- **Deployment:** Google Cloud
 
-**Content Generation:** Learn the user's writing style from their 
-past tweets, draft posts in their voice when news breaks, improve 
-through feedback on drafts, eventually auto-post once trusted.
+### Environment
 
-## Tech Stack
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- [pnpm](https://pnpm.io/) (Node package manager)
+- Python 3.11+
+- Node.js 20+
 
-Nothing is locked in. Current leanings being explored:
-- Next.js for frontend + API routes
-- Supabase for auth and database
-- X API v2 for search, monitoring, posting
-- Grok API for X-native intelligence tasks
-- Claude API for writing and style analysis
-- Google Cloud for deployment
+### Coding Agents
 
-All of this gets validated through building, not decided upfront.
-
-## Development
-
-- Building from scratch on a new laptop after 8 months away 
-  from coding
-- Manual-first approach: learn fundamentals, then automate
 - Cline (VS Code) as primary coding assistant
-- Claude Code as secondary
-- agents.md as shared context across all coding tools
-- Reusable workflows and skills built organically from real 
-  friction during development
+- `CLAUDE.md` with Claude Code as secondary
+- `AGENTS.md` for shared context across tools
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE)
