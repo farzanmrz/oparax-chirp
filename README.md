@@ -1,8 +1,8 @@
-# 🐦 Oparax Chirp - Social Media Automater
+# 🐦 Oparax - Social Media Automater
 
 ## Overview
 
-**Oparax Chirp** is a tool for professional social media reporters who earn
+**Oparax** is a tool for professional social media reporters who earn
 revenue from posting and need to catch breaking stories fast. It
 monitors their news sources on X, surfaces what matters, and
 eventually drafts posts in their voice.

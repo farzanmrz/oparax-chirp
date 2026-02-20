@@ -1,8 +1,8 @@
-# Project Brief: Oparax Chirp
+# Project Brief: Oparax
 
 ## What Is This?
 
-Oparax Chirp is a social media automation tool for professional news reporters who earn revenue from posting breaking stories on platforms like X (Twitter) and Instagram. It monitors news sources, surfaces what matters, and drafts posts in the user's voice.
+Oparax is a social media automation tool for professional news reporters who earn revenue from posting breaking stories on platforms like X (Twitter) and Instagram. It monitors news sources, surfaces what matters, and drafts posts in the user's voice.
 
 ## Who Is This For?
 

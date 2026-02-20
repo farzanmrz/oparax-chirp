@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-Oparax Chirp is built around two core pipelines that work independently but complement each other.
+Oparax is built around two core pipelines that work independently but complement each other.
 
 ### Pipeline A: News Intelligence
 
@@ -73,30 +73,6 @@ Learn how things work by doing them by hand, then automate once understood.
 - Platform-specific style learning
 - Subject-specific style learning
 
-## Component Relationships
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Web Interface                           │
-│            (query testing → monitoring → drafts)             │
-└─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│   Pipeline A  │    │   Pipeline B  │    │   Alert       │
-│   News Intel  │    │   Content Gen │    │   Channels    │
-└───────────────┘    └───────────────┘    └───────────────┘
-        │                     │                     │
-        ▼                     ▼                     ▼
-┌───────────────┐    ┌───────────────┐    ┌───────────────┐
-│   X API v2    │    │   Claude API  │    │   WhatsApp    │
-│   (Grok API)  │    │   (Style DB)  │    │   Discord     │
-│   Websites    │    │               │    │   Telegram    │
-└───────────────┘    └───────────────┘    │   Email       │
-                                          └───────────────┘
-```
-
 ## Critical Implementation Paths
 
 1. **X API authentication** — OAuth 2.0, token management, rate limits
@@ -105,16 +81,3 @@ Learn how things work by doing them by hand, then automate once understood.
 4. **Draft generation** — Claude prompts that capture voice
 5. **Feedback integration** — Learning from edits and corrections
 6. **Alert delivery** — Multi-channel notification system
-
-## Data Flow
-
-**News Intelligence:**
-```
-X API → Raw Tweets → Filter/Score → Newsworthy? → Alert → Draft Trigger
-```
-
-**Content Generation:**
-```
-News Event → Style Lookup → Claude Prompt → Draft → User Review → Publish
-                                    ↑
-                              Feedback Loop
