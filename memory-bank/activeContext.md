@@ -2,44 +2,34 @@
 
 ## Current Work Focus
 
-**Phase:** X API v2 experimentation (Pipeline A, Phase 1)
+**Phase:** X API v2 experimentation (Pipeline A, Phase 1) + frontend scaffolding
 
-**Immediate goal:** Get hands-on with the X API v2 Search Recent Posts endpoint to answer foundational questions before building any pipelines.
+## What's Been Done
 
-## Investigation Questions
+- **Frontend:** Next.js 16 project set up in `frontend/` with App Router, TypeScript, Tailwind CSS v4, ESLint. Auth landing page with "Continue with X" button (placeholder, not wired up).
+- **X API test:** `scripts/search_test.py` makes a working call to X API v2 Search Recent Posts (searches "fc barcelona news", returns 10 results with author info).
+- **Python deps:** `python-dotenv` and `requests` installed via uv.
+- **X API access:** `.env` configured with `X_BEARER_TOKEN`.
+- **Project context:** `CLAUDE.md` created and maintained for Claude Code.
 
-From README.md, we need to answer:
+## Investigation Questions (Phase 1)
 
-1. Can we search recent posts by a topic query?
+1. ~~Can we search recent posts by a topic query?~~ Yes, confirmed with `search_test.py`
 2. Can we filter results to specific X accounts?
 3. What do the query operators and annotation filters look like for football news?
 4. What are the actual rate limits in practice?
-5. Build simple local frontend to test queries and view results
-
-## Current State
-
-- **Code written:** None beyond repo scaffold
-- **Dependencies:** None installed (pyproject.toml is empty)
-- **X API access:** Not yet configured
-- **Frontend:** Not started
+5. ~~Build simple local frontend to test queries and view results~~ Frontend scaffolded, needs query UI
 
 ## Next Steps
 
-1. Set up X API v2 access (developer account, credentials)
-2. Write Python script to test Search Recent Posts endpoint
-3. Experiment with query operators for football news
-4. Test filtering by specific accounts
-5. Document rate limit behavior
-6. Build minimal frontend for query testing
+1. Experiment with X API query operators (account filtering with `from:`, boolean operators)
+2. Test rate limits by making repeated calls
+3. Build a query testing UI in the frontend
+4. Wire up OAuth for "Continue with X" authentication
 
 ## Active Decisions
 
-- Tech stack choices are **directional, not final** — validating through implementation
+- Tech stack choices are **directional, not final**
 - Manual-first approach: learn APIs by hand before abstracting
-- No premature optimization — get something working first
-
-## Important Patterns
-
-- Document learnings as we go (update memory bank)
-- Test with real data (football news) from the start
-- Keep scope tight — only what's needed for Phase 1
+- Auth will be OAuth via X.com (single flow, no separate login/register)
+- Tailwind CSS v4 configured via CSS, not a config file

@@ -41,8 +41,9 @@ User's Past Posts → Style Learning → Draft Generation → Feedback Loop → 
 
 | Layer | Direction | Status |
 |-------|-----------|--------|
-| Frontend | Next.js | Considering |
-| Auth / DB | Supabase | Considering |
+| Frontend | Next.js 16 (App Router, TypeScript, Tailwind v4) | Set up |
+| Auth | OAuth via X.com | Planned |
+| Database | Supabase | Considering |
 | Social API | X API v2 | Experimenting |
 | Intelligence | Grok API | Considering |
 | Writing | Claude API | Considering |

@@ -2,23 +2,26 @@
 
 ## What Works
 
-- **Repository scaffold:** Git repo initialized, remote configured, basic files in place
-- **Documentation:** README.md with project overview, roadmap, and architecture notes
-- **Memory bank:** All 6 core files created (this file completes the set)
-- **Customer research:** Validated user Reshad interviewed before any code written
+- **Repository:** Git repo with remote, `.gitignore`, LICENSE, `CLAUDE.md`
+- **Frontend:** Next.js 16 app in `frontend/` with App Router, TypeScript, Tailwind CSS v4, ESLint. Auth landing page with "Continue with X" button (placeholder).
+- **X API test:** `scripts/search_test.py` successfully calls X API v2 Search Recent Posts endpoint (football news query with author expansion).
+- **Python deps:** `python-dotenv`, `requests` installed via uv.
+- **X API access:** Bearer Token configured in `.env`.
+- **Documentation:** README, CLAUDE.md, and memory-bank files maintained.
+- **Customer research:** Validated user Reshad interviewed before any code written.
 
 ## What's Left to Build
 
 ### Pipeline A: News Intelligence
 
-**Phase 1 (Current):**
-- [ ] Set up X API v2 developer account and credentials
-- [ ] Write Python script to test Search Recent Posts endpoint
-- [ ] Answer: Can we search by topic query?
+**Phase 1 (In Progress):**
+- [x] Set up X API v2 credentials
+- [x] Write Python script to test Search Recent Posts endpoint
+- [x] Answer: Can we search by topic query? (Yes)
 - [ ] Answer: Can we filter to specific accounts?
 - [ ] Answer: What query operators work for football news?
 - [ ] Answer: What are actual rate limits?
-- [ ] Build simple local frontend for query testing
+- [ ] Build query testing UI in the frontend
 
 **Phase 2 (Future):**
 - [ ] Pull user's followed accounts
@@ -38,10 +41,11 @@
 - [ ] Feedback loop implementation
 - [ ] Auto-posting ("yolo mode")
 
-### Infrastructure (Future)
+### Infrastructure
 
-- [ ] Web interface (Next.js)
-- [ ] Auth and database (Supabase)
+- [x] Frontend scaffold (Next.js)
+- [ ] Auth (OAuth via X.com)
+- [ ] Database (Supabase)
 - [ ] Alert channels (WhatsApp, Discord, Telegram, email)
 - [ ] Deployment (Google Cloud)
 
@@ -49,37 +53,14 @@
 
 **Phase:** X API v2 experimentation (Pipeline A, Phase 1)
 
-**Blockers:** None — ready to begin X API setup
+**Active work:** Experimenting with X API query operators and building query UI
 
-**Active work:** Nothing in progress yet, about to start Phase 1
-
-## Known Issues
-
-None yet — project just started.
+**Blockers:** None
 
 ## Known Unknowns
 
-1. **X API rate limits** — Documentation says one thing, practice may differ
-2. **Query operators for football news** — Need to experiment to find what works
-3. **Annotation filters** — May or may not be useful for our use case
-4. **Access level requirements** — Free tier may not be sufficient, need to test
-5. **Style learning accuracy** — Can we actually match user's voice exactly?
-6. **Newsworthiness scoring** — What signals matter for football news?
-
-## Evolution of Project Decisions
-
-| Decision | Initial Thought | Current Status | Notes |
-|----------|-----------------|----------------|-------|
-| Tech stack | Next.js, Supabase, etc. | Directional, not final | Validate through implementation |
-| X API access | Assume Basic tier works | Unknown | May need Pro tier |
-| Style learning | Claude API | Considering | Could use other LLMs |
-| Alert channels | WhatsApp priority | All equal | User preference unknown |
-| Deployment | Google Cloud | Considering | Could change based on needs |
-
-## Milestones
-
-1. **X API Hello World** — First successful API call (pending)
-2. **Query Working** — Search returns relevant football news (pending)
-3. **Account Filtering** — Can filter to specific accounts (pending)
-4. **Frontend MVP** — Local UI for testing queries (pending)
-5. **Phase 1 Complete** — All investigation questions answered (pending)
+1. **X API rate limits** — need to test in practice
+2. **Query operators for football news** — need more experimentation
+3. **Access level requirements** — free tier may not be sufficient
+4. **Style learning accuracy** — can we match user's voice exactly?
+5. **Newsworthiness scoring** — what signals matter for football news?
