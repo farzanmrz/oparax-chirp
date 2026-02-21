@@ -44,7 +44,7 @@
 ### Infrastructure
 
 - [x] Frontend scaffold (Next.js)
-- [ ] Auth (OAuth via X.com)
+- [~] Auth (OAuth via X.com) — coded and compiles, blocked on Supabase 400 error
 - [ ] Database (Supabase)
 - [ ] Alert channels (WhatsApp, Discord, Telegram, email)
 - [ ] Deployment (Google Cloud)
@@ -55,7 +55,7 @@
 
 **Active work:** Experimenting with X API query operators and building query UI
 
-**Blockers:** None
+**Blockers:** Supabase 400 error on X OAuth callback — see `.claude/reference/auth.md`
 
 ## Known Unknowns
 

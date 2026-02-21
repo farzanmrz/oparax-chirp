@@ -10,6 +10,7 @@
 - **X API test:** `scripts/search_test.py` makes a working call to X API v2 Search Recent Posts (searches "fc barcelona news", returns 10 results with author info).
 - **Python deps:** `python-dotenv` and `requests` installed via uv.
 - **X API access:** `.env` configured with `X_BEARER_TOKEN`.
+- **Auth flow:** Supabase + X OAuth 2.0 coded and compiles; blocked on a Supabase 400 error at runtime.
 - **Project context:** `CLAUDE.md` created and maintained for Claude Code.
 
 ## Investigation Questions (Phase 1)
@@ -25,7 +26,7 @@
 1. Experiment with X API query operators (account filtering with `from:`, boolean operators)
 2. Test rate limits by making repeated calls
 3. Build a query testing UI in the frontend
-4. Wire up OAuth for "Continue with X" authentication
+4. Debug Supabase 400 error blocking the X OAuth auth flow
 
 ## Active Decisions
 

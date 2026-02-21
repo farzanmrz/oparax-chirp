@@ -7,7 +7,7 @@ All choices are directional and being validated. Nothing is locked in.
 | Component | Technology | Status |
 |-----------|------------|--------|
 | Frontend | Next.js 16 (App Router, TypeScript, Tailwind CSS v4) | Set up |
-| Auth | OAuth via X.com (single "Continue with X" flow) | Planned |
+| Auth | OAuth via X.com (Supabase) | Coded, blocked on 400 error |
 | Database | Supabase | Considering |
 | Social API | X API v2 | Experimenting |
 | Intelligence | Grok API | Considering |
