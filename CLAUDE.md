@@ -6,7 +6,7 @@ This file provides guidance to Claude Code when working in this repository.
 
 **Oparax** — AI-powered social media automation for professional news reporters. Monitors news sources, surfaces what matters, and drafts posts in the user's voice. Repo name: `oparax-chirp`.
 
-**Current stage:** Pipeline A, Phase 1 — experimenting with X API v2 to answer foundational questions before building pipelines. Frontend scaffolded. Backend empty.
+**Current stage:** Pipeline A, Phase 1 — experimenting with X API v2 to answer foundational questions before building pipelines. Auth flow (Supabase + X OAuth) is coded and compiles but blocked on a Supabase 400 error at runtime; see `.claude/reference/auth.md` for details. Backend empty.
 
 ## Repo Layout
 
@@ -19,7 +19,8 @@ oparax-chirp/
 ├── .claude/
 │   └── reference/  # Task-specific reference docs — load when relevant
 ├── pyproject.toml  # Root-level Python config (uv); serves scripts/ for now
-└── .env            # API credentials (gitignored — never commit)
+├── .env            # Root credentials (gitignored) — all keys (X API + Supabase)
+└── frontend/.env.local  # Frontend-only env vars (gitignored) — NEXT_PUBLIC_* keys for Next.js
 ```
 
 ## Package Managers
@@ -29,8 +30,9 @@ oparax-chirp/
 
 ## Security Rules (no exceptions)
 
-- `.env` is gitignored. Never commit credentials.
+- `.env` is gitignored. `frontend/.env.local` is also gitignored. Never commit credentials from either file.
 - `X_BEARER_TOKEN` is server-only. Never put it in a `NEXT_PUBLIC_` variable or pass it to a client component.
+- Next.js only reads env files from `frontend/` (where `next.config.ts` lives), not the project root. That is why `frontend/.env.local` exists separately.
 
 ## Always-On Context
 

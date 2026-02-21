@@ -1,4 +1,18 @@
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+
 export default function Home() {
+  async function handleSignIn() {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "twitter",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm px-6">
@@ -13,6 +27,7 @@ export default function Home() {
 
           <button
             type="button"
+            onClick={handleSignIn}
             className="flex w-full items-center justify-center gap-3 rounded-xl bg-foreground px-4 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground/90"
           >
             <svg
