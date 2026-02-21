@@ -12,6 +12,7 @@
 - **X API access:** `.env` configured with `X_BEARER_TOKEN`.
 - **Auth flow:** Supabase + X OAuth 2.0 coded and compiles; blocked on a Supabase 400 error at runtime.
 - **Project context:** `CLAUDE.md` created and maintained for Claude Code.
+- **Last updated:** 2026-02-21 — auth flow still blocked on Supabase 400 error; next priority is debugging that.
 
 ## Investigation Questions (Phase 1)
 
