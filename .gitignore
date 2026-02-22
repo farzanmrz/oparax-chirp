@@ -195,3 +195,11 @@ __marimo__/
 
 # Environment variables
 .env
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
