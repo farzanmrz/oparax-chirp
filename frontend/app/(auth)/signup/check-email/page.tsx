@@ -9,7 +9,7 @@ export default function CheckEmailPage() {
         link to activate your account.
       </p>
       <Link
-        href="/login"
+        href="/?tab=signin"
         className="inline-block text-sm font-medium text-foreground underline"
       >
         Back to log in

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { signup } from "../actions";
+import { signup } from "@/app/(auth)/signup/actions";
 
 // Mock next/navigation
 const mockRedirect = vi.fn();
@@ -62,7 +62,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/signup?error=Password%20should%20be%20at%20least%206%20characters"
+      "/?tab=signup&error=Password%20should%20be%20at%20least%206%20characters"
     );
   });
 
@@ -80,7 +80,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/signup?error=")
+      expect.stringContaining("/?tab=signup&error=")
     );
   });
 
@@ -98,7 +98,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/signup?error=")
+      expect.stringContaining("/?tab=signup&error=")
     );
   });
 
@@ -116,7 +116,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/signup?error=")
+      expect.stringContaining("/?tab=signup&error=")
     );
   });
 });

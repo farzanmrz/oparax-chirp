@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Confirmation failed — redirect back to signup with error
-  redirectTo.pathname = "/signup";
+  redirectTo.pathname = "/";
+  redirectTo.searchParams.set("tab", "signup");
   redirectTo.searchParams.set("error", "Email confirmation failed. Please try signing up again.");
   return NextResponse.redirect(redirectTo);
 }

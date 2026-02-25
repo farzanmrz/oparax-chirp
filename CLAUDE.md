@@ -63,6 +63,10 @@ Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
   - `server.ts` — server client (`createServerClient`) for Server Actions and Route Handlers
   - `middleware.ts` — session refresh logic used by `proxy.ts`
 - **Auth pattern**: Server Actions for form submissions (not client-side fetch). Auth forms use route group `(auth)` for shared layout.
+- **Auth page**: Single tabbed page at `/` with Sign Up and Sign In tabs. Tab state uses `?tab=signup` / `?tab=signin` URL search params. Server actions redirect errors back with `?tab=...&error=...` to preserve the active tab.
+  - Sign Up → `(auth)/signup/actions.ts` → `/signup/check-email` → email link → `/auth/confirm` → `/dashboard`
+  - Sign In → `(auth)/login/actions.ts` → `/dashboard`
+  - Old `/signup` URL redirects to `/?tab=signup` for backward compat.
 - **Security rule**: Always use `getUser()` on the server, never `getSession()` — the latter doesn't revalidate the JWT with Supabase.
 - **Email confirmation**: Enabled. After signup, user must click email link → hits `/auth/confirm` route handler → redirects to `/dashboard`.
 - **Env var**: Use only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — no ANON_KEY fallback.
@@ -79,9 +83,36 @@ These rules prevent breaking auth. Violating them causes silent session failures
 
 ### Known Issues / TODOs
 
-- Duplicate email signup: Supabase silently succeeds (anti-enumeration) — shows "check email" page but no email is sent. Need to add client-side check or post-signup validation to redirect to `/login` if email already exists.
+- Duplicate email signup: Supabase silently succeeds (anti-enumeration) — shows "check email" page but no email is sent. Need to add client-side check or post-signup validation to redirect to `/` if email already exists.
 - Email confirmation template: Must be configured in Supabase Dashboard to point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
-- Proxy route protection: Official docs recommend redirecting unauthenticated users to `/login` in the proxy. Currently we do page-level protection. Should add proxy-level redirect when `/login` page is built.
+- Proxy route protection: Official docs recommend redirecting unauthenticated users in the proxy. Currently we do page-level protection in `dashboard/page.tsx`. Should add proxy-level redirect for protected routes.
+
+## Test Infrastructure
+
+Tests live in the project-root `tests/` directory (not colocated with source files).
+
+```text
+tests/
+├── unit/frontend/       # Vitest unit tests for frontend
+│   └── auth/            # Auth-related tests
+├── e2e/                 # Playwright E2E tests (future)
+└── tsconfig.json        # Extends frontend tsconfig for IDE support
+```
+
+### Running Tests
+
+```bash
+cd frontend && pnpm test       # Run all unit tests (single run)
+cd frontend && pnpm test:watch # Watch mode
+```
+
+### Conventions
+
+- **File naming**: `{feature}-{type}.test.ts` (e.g., `login-actions.test.ts`, `auth-page.test.tsx`)
+- **Imports**: Always use `@/` alias (e.g., `import { login } from "@/app/(auth)/login/actions"`) — never relative paths from test to source.
+- **Vitest config** lives at `frontend/vitest.config.ts`. It uses `resolve.alias` to map package imports (next, react, etc.) to `frontend/node_modules/` so tests outside `frontend/` can resolve dependencies.
+- **DOM cleanup**: Use explicit `afterEach(() => { cleanup(); })` in component tests — auto-cleanup doesn't work reliably with out-of-root test files.
+- **Mock pattern for `redirect()`**: Next.js `redirect()` throws `NEXT_REDIRECT`. Tests use `await expect(fn()).rejects.toThrow("NEXT_REDIRECT")` then assert on a `mockRedirect` spy.
 
 ## External Services
 
@@ -89,13 +120,6 @@ These rules prevent breaking auth. Violating them causes silent session failures
 - **Supabase** — Auth (email/password, X OAuth planned) and database
 - **Claude API** — Content generation (planned)
 - **Grok API** — Intelligence/analysis (planned)
-
-## Documentation Lookups
-
-When you need library/framework documentation, API references, or up-to-date usage examples:
-- Delegate to the `ctx-researcher` subagent via the Task tool
-- For multiple libraries, spawn multiple ctx-researcher instances in parallel
-- Users can also manually invoke `/ctx <library> <question>`
 
 ## Python Backend
 

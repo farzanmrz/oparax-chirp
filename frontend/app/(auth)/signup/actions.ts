@@ -12,7 +12,7 @@ export async function signup(formData: FormData) {
   const { error } = await supabase.auth.signUp({ email, password });
 
   if (error) {
-    redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    redirect(`/?tab=signup&error=${encodeURIComponent(error.message)}`);
   }
 
   // Email confirmation is enabled — session won't exist yet.
