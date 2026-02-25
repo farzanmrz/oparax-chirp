@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Oparax Chirp is an AI-powered social media automation tool for professional news reporters. It monitors X (Twitter) for breaking stories and drafts posts in the user's voice. The primary use case is a football news reporter with 400k+ followers on X.
+Oparax is an AI-powered social media automation tool for professional news reporters. It monitors X (Twitter) for breaking stories and drafts posts in the user's voice. The primary use case is a football news reporter with 400k+ followers on X.
 
 ## Architecture
 
@@ -24,6 +24,8 @@ pnpm dev          # Dev server at http://localhost:3000 (Turbopack)
 pnpm build        # Production build
 pnpm start        # Serve production build
 pnpm lint         # ESLint with Next.js core-web-vitals + TypeScript rules
+pnpm test         # Run Vitest tests (single run)
+pnpm test:watch   # Run Vitest in watch mode
 ```
 
 ### Python (run from root)
@@ -34,10 +36,15 @@ uv run python scripts/search_test.py   # Test X API v2 search endpoint
 
 ## Environment Variables
 
-Required in `.env` at project root:
+Required in `.env` at project root (for Python scripts):
 
 - `X_BEARER_TOKEN`, `X_CONSUMER_KEY`, `X_SECRET_KEY` — X API v2 credentials
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase auth & database
+
+Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
+
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Supabase publishable key (new format)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon/public JWT key (legacy fallback)
 
 ## Frontend Conventions
 
@@ -47,14 +54,31 @@ Required in `.env` at project root:
 - **Server Components by default**: Only add `"use client"` when interactivity is needed (state, effects, event handlers).
 - **TypeScript strict mode** is enabled. Path resolution uses `"moduleResolution": "bundler"`.
 - **ESLint**: Flat config format (v9+) in `eslint.config.mjs`.
+- **Turbopack root**: `next.config.ts` sets `turbopack.root` to `process.cwd()` because the monorepo root has a stale `package-lock.json` that confuses Turbopack's workspace detection.
+- **Proxy (formerly Middleware)**: `frontend/proxy.ts` runs on every request to refresh Supabase auth tokens. Next.js 16 renamed `middleware.ts` → `proxy.ts` (function export: `proxy()` not `middleware()`).
+
+## Supabase Auth
+
+- **Client utilities** in `frontend/lib/supabase/`:
+  - `client.ts` — browser client (`createBrowserClient`) for `"use client"` components
+  - `server.ts` — server client (`createServerClient`) for Server Actions and Route Handlers
+  - `middleware.ts` — session refresh logic used by `proxy.ts`
+- **Auth pattern**: Server Actions for form submissions (not client-side fetch). Auth forms use route group `(auth)` for shared layout.
+- **Security rule**: Always use `getUser()` on the server, never `getSession()` — the latter doesn't revalidate the JWT with Supabase.
+- **Email confirmation**: Enabled. After signup, user must click email link → hits `/auth/confirm` route handler → redirects to `/dashboard`.
+- **Env var fallback**: Client utilities use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+
+### Known Issues / TODOs
+
+- Duplicate email signup: Supabase silently succeeds (anti-enumeration) — shows "check email" page but no email is sent. Need to add client-side check or post-signup validation to redirect to `/login` if email already exists.
+- Email confirmation template: Must be configured in Supabase Dashboard to point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
 
 ## External Services
 
 - **X API v2** — Tweet search, user data (`/tweets/search/recent`)
-- **Supabase** — Auth (X OAuth) and database
+- **Supabase** — Auth (email/password, X OAuth planned) and database
 - **Claude API** — Content generation (planned)
 - **Grok API** — Intelligence/analysis (planned)
-- **Deployment target** — Google Cloud
 
 ## Documentation Lookups
 
