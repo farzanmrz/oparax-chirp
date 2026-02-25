@@ -1,39 +1,24 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import SignOutButton from "./sign-out-button";
+import { redirect } from "next/navigation";
 
-export default async function Dashboard() {
+export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect("/");
   }
 
-  const username =
-    user.user_metadata?.user_name ??
-    user.user_metadata?.preferred_username ??
-    "there";
-
   return (
-    <div className="min-h-screen bg-background">
-      <nav className="border-b border-foreground/10">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <span className="text-lg font-bold tracking-tight text-foreground">
-            Oparax
-          </span>
-          <SignOutButton />
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <h1 className="text-2xl font-bold text-foreground">
-          Welcome, @{username}
-        </h1>
-        <p className="mt-2 text-foreground/60">
-          Your dashboard will live here.
+    <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="space-y-4 text-center">
+        <h1 className="text-2xl font-bold">Welcome to Oparax</h1>
+        <p className="text-sm text-muted-foreground">
+          Signed in as {user.email}
         </p>
-      </main>
+      </div>
     </div>
   );
 }
