@@ -20,14 +20,14 @@ function AuthPageContent() {
   return (
     <>
       {/* Tab bar */}
-      <div className="flex border-b border-foreground/10">
+      <div className="flex border-b border-border">
         <button
           type="button"
           onClick={() => switchTab("signup")}
           className={`flex-1 py-2 text-center text-sm font-medium transition-colors ${
             !isSignIn
-              ? "border-b-2 border-foreground text-foreground"
-              : "text-foreground/40 hover:text-foreground/60"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Sign Up
@@ -37,8 +37,8 @@ function AuthPageContent() {
           onClick={() => switchTab("signin")}
           className={`flex-1 py-2 text-center text-sm font-medium transition-colors ${
             isSignIn
-              ? "border-b-2 border-foreground text-foreground"
-              : "text-foreground/40 hover:text-foreground/60"
+              ? "border-b-2 border-primary text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           Sign In
@@ -50,7 +50,7 @@ function AuthPageContent() {
         <h1 className="text-2xl font-bold">
           {isSignIn ? "Welcome back" : "Create an account"}
         </h1>
-        <p className="text-sm text-foreground/60">
+        <p className="text-sm text-muted-foreground">
           {isSignIn
             ? "Sign in to your Oparax account"
             : "Sign up to get started with Oparax"}
@@ -61,7 +61,7 @@ function AuthPageContent() {
       {error && (
         <div
           role="alert"
-          className="rounded-md bg-red-500/10 p-3 text-sm text-red-500"
+          className="rounded-md bg-destructive-bg p-3 text-sm text-destructive"
         >
           {error}
         </div>
@@ -80,7 +80,7 @@ function AuthPageContent() {
               type="email"
               required
               placeholder="you@example.com"
-              className="w-full rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             />
           </div>
 
@@ -95,13 +95,13 @@ function AuthPageContent() {
               required
               minLength={6}
               placeholder="At least 6 characters"
-              className="w-full rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover"
           >
             Sign up
           </button>
@@ -121,7 +121,7 @@ function AuthPageContent() {
               type="email"
               required
               placeholder="you@example.com"
-              className="w-full rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             />
           </div>
 
@@ -136,13 +136,13 @@ function AuthPageContent() {
               required
               minLength={6}
               placeholder="Your password"
-              className="w-full rounded-md border border-foreground/20 bg-background px-3 py-2 text-sm placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-foreground/20"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90"
+            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover"
           >
             Sign in
           </button>
@@ -150,14 +150,14 @@ function AuthPageContent() {
       )}
 
       {/* Footer link */}
-      <p className="text-center text-sm text-foreground/60">
+      <p className="text-center text-sm text-muted-foreground">
         {isSignIn ? (
           <>
             Don&apos;t have an account?{" "}
             <button
               type="button"
               onClick={() => switchTab("signup")}
-              className="font-medium text-foreground underline"
+              className="font-medium text-primary underline hover:text-primary-hover"
             >
               Sign up
             </button>
@@ -168,7 +168,7 @@ function AuthPageContent() {
             <button
               type="button"
               onClick={() => switchTab("signin")}
-              className="font-medium text-foreground underline"
+              className="font-medium text-primary underline hover:text-primary-hover"
             >
               Sign in
             </button>
@@ -182,24 +182,24 @@ function AuthPageContent() {
 function AuthPageFallback() {
   return (
     <>
-      <div className="flex border-b border-foreground/10">
-        <div className="flex-1 py-2 text-center text-sm font-medium border-b-2 border-foreground text-foreground">
+      <div className="flex border-b border-border">
+        <div className="flex-1 py-2 text-center text-sm font-medium border-b-2 border-primary text-foreground">
           Sign Up
         </div>
-        <div className="flex-1 py-2 text-center text-sm font-medium text-foreground/40">
+        <div className="flex-1 py-2 text-center text-sm font-medium text-muted-foreground">
           Sign In
         </div>
       </div>
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-bold">Create an account</h1>
-        <p className="text-sm text-foreground/60">
+        <p className="text-sm text-muted-foreground">
           Sign up to get started with Oparax
         </p>
       </div>
       <div className="space-y-4">
-        <div className="h-[68px] animate-pulse rounded-md bg-foreground/5" />
-        <div className="h-[68px] animate-pulse rounded-md bg-foreground/5" />
-        <div className="h-10 animate-pulse rounded-md bg-foreground/10" />
+        <div className="h-[68px] animate-pulse rounded-md bg-muted" />
+        <div className="h-[68px] animate-pulse rounded-md bg-muted" />
+        <div className="h-10 animate-pulse rounded-md bg-muted" />
       </div>
     </>
   );

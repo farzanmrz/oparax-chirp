@@ -12,10 +12,10 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="space-y-4 text-center">
         <h1 className="text-2xl font-bold">Welcome to Oparax</h1>
-        <p className="text-sm text-foreground/60">
+        <p className="text-sm text-muted-foreground">
           Signed in as {user.email}
         </p>
       </div>

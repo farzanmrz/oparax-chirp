@@ -63,7 +63,7 @@ describe("AuthPage", () => {
   it("displays error from search params", () => {
     vi.mocked(useSearchParams).mockReturnValue({
       get: vi.fn().mockImplementation((key: string) => {
-        if (key === "error") return "Invalid login credentials";
+        if (key === "error") return "Invalid email or password.";
         if (key === "tab") return "signin";
         return null;
       }),
@@ -71,7 +71,7 @@ describe("AuthPage", () => {
 
     render(<AuthPage />);
 
-    expect(screen.getByText("Invalid login credentials")).toBeInTheDocument();
+    expect(screen.getByText("Invalid email or password.")).toBeInTheDocument();
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 

@@ -52,7 +52,7 @@ describe("login action", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/dashboard");
   });
 
-  it("redirects with error on invalid credentials", async () => {
+  it("redirects with mapped error on invalid credentials", async () => {
     mockSignInWithPassword.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -65,11 +65,11 @@ describe("login action", () => {
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signin&error=Invalid%20login%20credentials"
+      "/?tab=signin&error=Invalid%20email%20or%20password."
     );
   });
 
-  it("redirects with error when email not confirmed", async () => {
+  it("maps 'Email not confirmed' to generic message (prevents enumeration)", async () => {
     mockSignInWithPassword.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -82,11 +82,11 @@ describe("login action", () => {
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signin&error=Email%20not%20confirmed"
+      "/?tab=signin&error=Invalid%20email%20or%20password."
     );
   });
 
-  it("redirects with error when rate limited", async () => {
+  it("redirects with mapped error when rate limited", async () => {
     mockSignInWithPassword.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -98,6 +98,50 @@ describe("login action", () => {
     const formData = createFormData("testuser@oparax.com", "testPassword123");
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signin&error=")
+    );
+  });
+
+  // Validation edge cases — Supabase should NOT be called
+
+  it("redirects with error when email is missing", async () => {
+    const formData = new FormData();
+    formData.set("password", "testPassword123");
+
+    await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signin&error=")
+    );
+  });
+
+  it("redirects with error when password is missing", async () => {
+    const formData = new FormData();
+    formData.set("email", "test@example.com");
+
+    await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signin&error=")
+    );
+  });
+
+  it("redirects with error when email has no @ symbol", async () => {
+    const formData = createFormData("not-an-email", "testPassword123");
+
+    await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signin&error=")
+    );
+  });
+
+  it("redirects with error when password is too short", async () => {
+    const formData = createFormData("test@example.com", "abc");
+
+    await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignInWithPassword).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
       expect.stringContaining("/?tab=signin&error=")
     );

@@ -8,22 +8,28 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
 
   const redirectTo = request.nextUrl.clone();
-  redirectTo.pathname = "/dashboard";
   redirectTo.searchParams.delete("token_hash");
   redirectTo.searchParams.delete("type");
 
   if (token_hash && type) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.verifyOtp({ type, token_hash });
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.verifyOtp({ type, token_hash });
 
-    if (!error) {
-      return NextResponse.redirect(redirectTo);
+      if (!error) {
+        redirectTo.pathname = "/dashboard";
+        return NextResponse.redirect(redirectTo);
+      }
+    } catch {
+      // Network error or unexpected failure — fall through to error redirect
     }
   }
 
-  // Confirmation failed — redirect back to signup with error
   redirectTo.pathname = "/";
   redirectTo.searchParams.set("tab", "signup");
-  redirectTo.searchParams.set("error", "Email confirmation failed. Please try signing up again.");
+  redirectTo.searchParams.set(
+    "error",
+    "Email confirmation failed. Please try signing up again."
+  );
   return NextResponse.redirect(redirectTo);
 }

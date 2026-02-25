@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
+/* ── Light mode (default) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --background: #fafbfc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+
+  /* Primary — deep indigo */
+  --primary: #4338ca;
+  --primary-foreground: #ffffff;
+  --primary-hover: #3730a3;
+
+  /* Accent — lighter indigo tint */
+  --accent: #e0e7ff;
+  --accent-foreground: #3730a3;
+
+  /* Muted — subtle gray for secondary surfaces */
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+
+  /* Border */
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4338ca;
+
+  /* Destructive — for errors */
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --destructive-bg: #fef2f2;
+
+  /* Success */
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+  --success-bg: #f0fdf4;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* ── Dark mode ── */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Surfaces */
+    --background: #020617;
+    --foreground: #f1f5f9;
+    --card: #0f172a;
+    --card-foreground: #f1f5f9;
+
+    /* Primary — lighter indigo for dark bg contrast */
+    --primary: #818cf8;
+    --primary-foreground: #020617;
+    --primary-hover: #6366f1;
+
+    /* Accent */
+    --accent: #1e1b4b;
+    --accent-foreground: #c7d2fe;
+
+    /* Muted */
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+
+    /* Border */
+    --border: #1e293b;
+    --input: #1e293b;
+    --ring: #818cf8;
+
+    /* Destructive */
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --destructive-bg: #450a0a;
+
+    /* Success */
+    --success: #22c55e;
+    --success-foreground: #020617;
+    --success-bg: #052e16;
   }
 }
 
+/* ── Tailwind v4 theme registration ── */
+@theme inline {
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Colors (semantic tokens) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-bg: var(--destructive-bg);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-bg: var(--success-bg);
+}
+
+/* ── Base styles ── */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, sans-serif);
 }

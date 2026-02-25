@@ -56,6 +56,27 @@ Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
 - **Turbopack root**: `next.config.ts` sets `turbopack.root` to `process.cwd()` because the monorepo root has a stale `package-lock.json` that confuses Turbopack's workspace detection.
 - **Proxy (formerly Middleware)**: `frontend/proxy.ts` runs on every request to refresh Supabase auth tokens. Next.js 16 renamed `middleware.ts` → `proxy.ts` (function export: `proxy()` not `middleware()`).
 
+## Color System
+
+Premium semantic color palette defined via CSS custom properties in `frontend/app/globals.css`, registered in `@theme inline` for Tailwind v4. Both light and dark mode are supported via `prefers-color-scheme`.
+
+### Available Tailwind Color Classes
+
+- `bg-background`, `text-foreground` — page surface
+- `bg-card`, `text-card-foreground` — elevated cards
+- `bg-primary`, `text-primary-foreground`, `hover:bg-primary-hover` — brand buttons/links
+- `bg-accent`, `text-accent-foreground` — secondary highlights
+- `bg-muted`, `text-muted-foreground` — subdued text/surfaces
+- `border-border`, `border-input` — borders
+- `ring-ring` — focus rings
+- `bg-destructive-bg`, `text-destructive` — error states
+- `bg-success-bg`, `text-success` — success states
+
+**Rules:**
+
+- Do NOT use raw color values (e.g., `bg-red-500`). Use semantic tokens.
+- Do NOT use opacity modifiers on `foreground` (e.g., `text-foreground/60`). Use `text-muted-foreground` instead.
+
 ## Supabase Auth
 
 - **Client utilities** in `frontend/lib/supabase/`:
@@ -63,7 +84,9 @@ Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
   - `server.ts` — server client (`createServerClient`) for Server Actions and Route Handlers
   - `middleware.ts` — session refresh logic used by `proxy.ts`
 - **Auth pattern**: Server Actions for form submissions (not client-side fetch). Auth forms use route group `(auth)` for shared layout.
-- **Auth page**: Single tabbed page at `/` with Sign Up and Sign In tabs. Tab state uses `?tab=signup` / `?tab=signin` URL search params. Server actions redirect errors back with `?tab=...&error=...` to preserve the active tab.
+- **Input validation**: `frontend/lib/validation.ts` — shared `validateAuthForm()` used by both login and signup actions. Validates type (string, not null/File), email format (@), password length (>=6).
+- **Error mapping**: `frontend/lib/auth-errors.ts` — `mapAuthError()` maps raw Supabase error messages to user-safe generic messages. Prevents email enumeration.
+- **Auth page**: Single tabbed page at `/` with Sign Up and Sign In tabs. Tab state uses `?tab=signup` / `?tab=signin` URL search params. Server actions redirect mapped errors back with `?tab=...&error=...` to preserve the active tab.
   - Sign Up → `(auth)/signup/actions.ts` → `/signup/check-email` → email link → `/auth/confirm` → `/dashboard`
   - Sign In → `(auth)/login/actions.ts` → `/dashboard`
   - Old `/signup` URL redirects to `/?tab=signup` for backward compat.

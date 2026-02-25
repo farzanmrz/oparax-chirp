@@ -48,7 +48,7 @@ describe("signup action", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/signup/check-email");
   });
 
-  it("redirects with error on weak password", async () => {
+  it("redirects with mapped error on weak password", async () => {
     mockSignUp.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -62,11 +62,11 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signup&error=Password%20should%20be%20at%20least%206%20characters"
+      "/?tab=signup&error=Password%20must%20be%20at%20least%206%20characters."
     );
   });
 
-  it("redirects with error on invalid email format", async () => {
+  it("redirects with mapped error on invalid email format", async () => {
     mockSignUp.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -84,7 +84,7 @@ describe("signup action", () => {
     );
   });
 
-  it("redirects with error when rate limited", async () => {
+  it("redirects with mapped error when rate limited", async () => {
     mockSignUp.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -102,7 +102,7 @@ describe("signup action", () => {
     );
   });
 
-  it("redirects with error on unexpected server failure", async () => {
+  it("redirects with default error on unexpected server failure", async () => {
     mockSignUp.mockResolvedValue({
       data: { user: null, session: null },
       error: {
@@ -115,6 +115,70 @@ describe("signup action", () => {
     const formData = createFormData("testuser@oparax.com", "testPassword123");
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signup&error=")
+    );
+  });
+
+  it("maps 'User already registered' to generic message (prevents enumeration)", async () => {
+    mockSignUp.mockResolvedValue({
+      data: { user: null, session: null },
+      error: {
+        message: "User already registered",
+        code: "user_already_exists",
+        status: 422,
+      },
+    });
+
+    const formData = createFormData("existing@example.com", "testPassword123");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining(
+        encodeURIComponent("Unable to create account. Please try again or sign in.")
+      )
+    );
+  });
+
+  // Validation edge cases — Supabase should NOT be called
+
+  it("redirects with error when email is missing", async () => {
+    const formData = new FormData();
+    formData.set("password", "testPassword123");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signup&error=")
+    );
+  });
+
+  it("redirects with error when password is missing", async () => {
+    const formData = new FormData();
+    formData.set("email", "test@example.com");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signup&error=")
+    );
+  });
+
+  it("redirects with error when email has no @ symbol", async () => {
+    const formData = createFormData("not-an-email", "testPassword123");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining("/?tab=signup&error=")
+    );
+  });
+
+  it("redirects with error when password is too short", async () => {
+    const formData = createFormData("test@example.com", "abc");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
       expect.stringContaining("/?tab=signup&error=")
     );
