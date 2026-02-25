@@ -35,7 +35,7 @@ This project is an AI-powered social media automation tool (Oparax) with:
 - A Next.js 16 frontend (App Router, TypeScript, Tailwind CSS 4) in `frontend/`
 - A Python backend at the project root
 - Supabase is used for **Auth** and **Database**
-- Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 
 ## Documentation Query Strategy
 

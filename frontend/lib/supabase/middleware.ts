@@ -6,8 +6,7 @@ export async function updateSession(request: NextRequest) {
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {
@@ -26,9 +25,13 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Revalidate the auth token on every request.
-  // IMPORTANT: Use getUser(), not getSession(). getSession() doesn't
-  // validate the JWT with the Supabase Auth server.
+  // Do not run code between createServerClient and
+  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+
+  // IMPORTANT: DO NOT REMOVE auth.getUser()
+  // Use getUser(), not getSession(). getSession() doesn't validate the JWT
+  // with the Supabase Auth server.
   await supabase.auth.getUser();
 
   return supabaseResponse;

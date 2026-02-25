@@ -43,8 +43,7 @@ Required in `.env` at project root (for Python scripts):
 Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
 
 - `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Supabase publishable key (new format)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon/public JWT key (legacy fallback)
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — Supabase publishable key (`sb_publishable_xxx` format)
 
 ## Frontend Conventions
 
@@ -66,12 +65,23 @@ Required in `frontend/.env.local` (for Next.js — auto-loaded, git-ignored):
 - **Auth pattern**: Server Actions for form submissions (not client-side fetch). Auth forms use route group `(auth)` for shared layout.
 - **Security rule**: Always use `getUser()` on the server, never `getSession()` — the latter doesn't revalidate the JWT with Supabase.
 - **Email confirmation**: Enabled. After signup, user must click email link → hits `/auth/confirm` route handler → redirects to `/dashboard`.
-- **Env var fallback**: Client utilities use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+- **Env var**: Use only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` — no ANON_KEY fallback.
+
+### Supabase SSR Code Rules (CRITICAL)
+
+These rules prevent breaking auth. Violating them causes silent session failures in production.
+
+- **NEVER** use individual cookie methods (`get`, `set`, `remove`) — always use `getAll`/`setAll` batch methods.
+- **NEVER** import from `@supabase/auth-helpers-nextjs` — it is deprecated. Use `@supabase/ssr`.
+- **NEVER** use `getSession()` on the server — always use `getUser()` to revalidate the JWT.
+- **NEVER** run code between `createServerClient(...)` and `supabase.auth.getUser()` in the proxy — can cause random logouts.
+- **NEVER** use `NEXT_PUBLIC_SUPABASE_ANON_KEY` — use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` only.
 
 ### Known Issues / TODOs
 
 - Duplicate email signup: Supabase silently succeeds (anti-enumeration) — shows "check email" page but no email is sent. Need to add client-side check or post-signup validation to redirect to `/login` if email already exists.
 - Email confirmation template: Must be configured in Supabase Dashboard to point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`.
+- Proxy route protection: Official docs recommend redirecting unauthenticated users to `/login` in the proxy. Currently we do page-level protection. Should add proxy-level redirect when `/login` page is built.
 
 ## External Services
 
