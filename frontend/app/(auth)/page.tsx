@@ -179,9 +179,35 @@ function AuthPageContent() {
   );
 }
 
+function AuthPageFallback() {
+  return (
+    <>
+      <div className="flex border-b border-foreground/10">
+        <div className="flex-1 py-2 text-center text-sm font-medium border-b-2 border-foreground text-foreground">
+          Sign Up
+        </div>
+        <div className="flex-1 py-2 text-center text-sm font-medium text-foreground/40">
+          Sign In
+        </div>
+      </div>
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-bold">Create an account</h1>
+        <p className="text-sm text-foreground/60">
+          Sign up to get started with Oparax
+        </p>
+      </div>
+      <div className="space-y-4">
+        <div className="h-[68px] animate-pulse rounded-md bg-foreground/5" />
+        <div className="h-[68px] animate-pulse rounded-md bg-foreground/5" />
+        <div className="h-10 animate-pulse rounded-md bg-foreground/10" />
+      </div>
+    </>
+  );
+}
+
 export default function AuthPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<AuthPageFallback />}>
       <AuthPageContent />
     </Suspense>
   );
