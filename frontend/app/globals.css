@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ── Light mode (default) ── */
 :root {
@@ -35,6 +39,26 @@
   --success: #16a34a;
   --success-foreground: #ffffff;
   --success-bg: #f0fdf4;
+
+  /* shadcn/ui additions */
+  --radius: 0.625rem;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: #fafbfc;
+  --sidebar-foreground: #0f172a;
+  --sidebar-primary: #4338ca;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e0e7ff;
+  --sidebar-accent-foreground: #3730a3;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #4338ca;
 }
 
 /* ── Dark mode ── */
@@ -73,7 +97,67 @@
     --success: #22c55e;
     --success-foreground: #020617;
     --success-bg: #052e16;
+
+    /* shadcn/ui additions */
+    --popover: #0f172a;
+    --popover-foreground: #f1f5f9;
+    --secondary: #1e293b;
+    --secondary-foreground: #f1f5f9;
+    --chart-1: oklch(0.488 0.243 264.376);
+    --chart-2: oklch(0.696 0.17 162.48);
+    --chart-3: oklch(0.769 0.188 70.08);
+    --chart-4: oklch(0.627 0.265 303.9);
+    --chart-5: oklch(0.645 0.246 16.439);
+    --sidebar: #020617;
+    --sidebar-foreground: #f1f5f9;
+    --sidebar-primary: #818cf8;
+    --sidebar-primary-foreground: #020617;
+    --sidebar-accent: #1e1b4b;
+    --sidebar-accent-foreground: #c7d2fe;
+    --sidebar-border: #1e293b;
+    --sidebar-ring: #818cf8;
   }
+}
+
+/* ── Dark mode (class-based for shadcn toggle support) ── */
+.dark {
+  --background: #020617;
+  --foreground: #f1f5f9;
+  --card: #0f172a;
+  --card-foreground: #f1f5f9;
+  --primary: #818cf8;
+  --primary-foreground: #020617;
+  --primary-hover: #6366f1;
+  --accent: #1e1b4b;
+  --accent-foreground: #c7d2fe;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --border: #1e293b;
+  --input: #1e293b;
+  --ring: #818cf8;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --destructive-bg: #450a0a;
+  --success: #22c55e;
+  --success-foreground: #020617;
+  --success-bg: #052e16;
+  --popover: #0f172a;
+  --popover-foreground: #f1f5f9;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: #020617;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #818cf8;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #1e1b4b;
+  --sidebar-accent-foreground: #c7d2fe;
+  --sidebar-border: #1e293b;
+  --sidebar-ring: #818cf8;
 }
 
 /* ── Tailwind v4 theme registration ── */
@@ -103,6 +187,34 @@
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-success-bg: var(--success-bg);
+
+  /* shadcn/ui additions */
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 /* ── Base styles ── */
@@ -110,4 +222,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans, sans-serif);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
 }

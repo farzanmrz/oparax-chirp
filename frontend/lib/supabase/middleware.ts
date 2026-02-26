@@ -1,3 +1,4 @@
+// Session refresh utility — NOT Next.js middleware itself. Called by proxy.ts to refresh auth cookies.
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 

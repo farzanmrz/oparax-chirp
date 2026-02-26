@@ -1,3 +1,4 @@
+// Server-side Supabase client — use this in Server Actions, Route Handlers, and Server Components.
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 

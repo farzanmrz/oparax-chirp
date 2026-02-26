@@ -1,3 +1,4 @@
+// Login server action — validates form input, calls Supabase signIn, redirects to /dashboard on success.
 "use server";
 
 import { redirect } from "next/navigation";

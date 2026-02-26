@@ -1,3 +1,4 @@
+// Auth layout — centers children in a card on screen. Shared by all pages in the (auth) route group.
 export default function AuthLayout({
   children,
 }: {

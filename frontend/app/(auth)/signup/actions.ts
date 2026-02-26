@@ -1,3 +1,4 @@
+// Signup server action — validates form input, calls Supabase signUp, redirects to check-email page.
 "use server";
 
 import { redirect } from "next/navigation";

@@ -1,3 +1,4 @@
+// Error mapping — converts raw Supabase error messages to user-friendly text. Prevents email enumeration.
 const ERROR_MAP: Record<string, string> = {
   // Login errors
   "Invalid login credentials": "Invalid email or password.",

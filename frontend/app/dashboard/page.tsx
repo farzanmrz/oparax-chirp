@@ -1,3 +1,4 @@
+// Dashboard — protected page. Checks auth server-side and redirects to "/" if not logged in.
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 

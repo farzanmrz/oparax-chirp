@@ -1,3 +1,4 @@
+// Root layout — wraps every page in the app. Loads fonts and global CSS.
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

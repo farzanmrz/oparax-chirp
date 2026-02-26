@@ -1,3 +1,4 @@
+// Auth page — the login/signup form at "/". Uses URL params (?tab=signup|signin) to toggle tabs.
 "use client";
 
 import { Suspense } from "react";

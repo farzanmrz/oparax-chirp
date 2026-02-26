@@ -2,7 +2,7 @@
 
 AI-powered social media automation for professional news reporters. Monitors news sources on X, surfaces breaking stories, and drafts posts in the user's voice.
 
-**Status:** Early development. Frontend scaffolded, X API v2 experimentation in progress.
+**Status:** Early development. Frontend auth flow complete, X API v2 experimentation in progress.
 
 ## Motivation
 
@@ -15,32 +15,39 @@ Two independent pipelines planned:
 - **Pipeline A (News Intelligence):** Monitor X accounts, cluster by topic, assess newsworthiness, alert user. Currently in Phase 1: X API experimentation.
 - **Pipeline B (Content Generation):** Learn user writing style from past posts, draft in their voice, feedback loop, auto-post. Not started yet.
 
+## Tech Stack
+
+| Category | Tool | Version |
+| -------- | ---- | ------- |
+| Framework | Next.js (App Router) | 16.1.6 |
+| UI Library | React | 19.2.3 |
+| Language | TypeScript | 5.x |
+| Styling | Tailwind CSS | 4.x |
+| Components | shadcn/ui | latest |
+| Auth & Database | Supabase | 2.97.0 |
+| Testing | Vitest + React Testing Library | 4.0.18 |
+| Social API | X API v2 | - |
+| Intelligence | Grok API | planned |
+| Content Generation | Claude API | planned |
+| Deployment | Vercel (frontend) | - |
+| Python | Python + uv | 3.11+ |
+
 ## Project Structure
 
 ```
 oparax-chirp/
-├── frontend/       # Next.js 16 app (pnpm), App Router, TypeScript, Tailwind CSS v4
-├── backend/        # Python API server (planned, empty)
-├── scripts/        # Standalone Python experiments (X API tests)
-├── memory-bank/    # Context files for Cline (VS Code agent)
-├── CLAUDE.md       # Context for Claude Code
-├── pyproject.toml  # Root Python config (uv)
-└── .env            # API credentials (gitignored)
+├── frontend/              # Next.js 16 app (TypeScript, Tailwind v4, shadcn/ui)
+│   ├── app/               # Pages and routes (App Router)
+│   ├── lib/               # Shared utilities (Supabase clients, validation)
+│   ├── __tests__/         # Vitest unit tests
+│   └── components/        # UI components (shadcn/ui)
+├── backend/               # Python API server (planned)
+├── scripts/               # Python experiments (X API tests)
+├── .claude/               # Claude Code config and reference docs
+├── CLAUDE.md              # Claude Code project instructions
+├── pyproject.toml         # Python dependencies (uv)
+└── .env                   # API credentials (git-ignored)
 ```
-
-## Tech Stack
-
-All choices are directional and being validated. Nothing is locked in.
-
-| Layer | Technology | Status |
-|-------|------------|--------|
-| Frontend | Next.js 16 (App Router, TypeScript, Tailwind v4) | Set up |
-| Auth | OAuth via X.com | Planned |
-| Database | Supabase | Considering |
-| Social API | X API v2 | Experimenting |
-| Intelligence | Grok API | Considering |
-| Writing | Claude API | Considering |
-| Deployment | Google Cloud | Considering |
 
 ## Getting Started
 
@@ -48,29 +55,53 @@ All choices are directional and being validated. Nothing is locked in.
 
 - Python 3.11+
 - Node.js 20+
-- [uv](https://docs.astral.sh/uv/) (Python package manager)
-- [pnpm](https://pnpm.io/) (Node package manager)
+- [uv](https://docs.astral.sh/uv/) — Python package manager
+- [pnpm](https://pnpm.io/) — Node.js package manager
 
 ### Setup
 
 ```bash
-# Clone and install Python dependencies
+# Clone the repo
+git clone https://github.com/farzanmrz/oparax-chirp.git
+cd oparax-chirp
+
+# Install Python dependencies
 uv sync
 
-# Install frontend dependencies
-cd frontend && pnpm install
-
-# Start the frontend dev server
+# Install frontend dependencies and start dev server
+cd frontend
+pnpm install
 pnpm dev
 ```
 
-Create a `.env` file at the project root with your X API credentials:
+The frontend dev server runs at `http://localhost:3000`.
+
+### Environment Variables
+
+Create `.env` at the project root:
 
 ```
-X_BEARER_TOKEN=your_token_here
+X_BEARER_TOKEN=your_x_api_token
+X_CONSUMER_KEY=your_consumer_key
+X_SECRET_KEY=your_secret_key
 ```
 
-### Run the X API test script
+Create `frontend/.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+```
+
+### Running Tests
+
+```bash
+cd frontend
+pnpm test         # Single run
+pnpm test:watch   # Watch mode
+```
+
+### Running the X API Test Script
 
 ```bash
 uv run python scripts/search_test.py
@@ -78,8 +109,7 @@ uv run python scripts/search_test.py
 
 ## Coding Agents
 
-- **Cline (VS Code):** Uses [`memory-bank/`](memory-bank) for context, [`.clineignore`](.clineignore) for exclusions
-- **Claude Code:** Uses [`CLAUDE.md`](CLAUDE.md) for project context
+- **Claude Code:** Uses [`CLAUDE.md`](CLAUDE.md) for project context, with detailed reference docs in `.claude/reference/`
 
 ## License
 
