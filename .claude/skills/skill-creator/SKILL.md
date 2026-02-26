@@ -4,7 +4,7 @@ description: Guide for creating effective skills. This skill should be used when
 argument-hint: "[skill-name]"
 disable-model-invocation: false
 user-invocable: true
-allowed-tools: Read, Edit, Write, Grep, Glob, Bash, AskUserQuestion, WebSearch, TodoWrite
+allowed-tools: Read, Edit, Write, Grep, Glob, Bash, AskUserQuestion, WebSearch, TodoWrite, EnterPlanMode, ExitPlanMode
 model: claude-opus-4-6
 ---
 
@@ -252,51 +252,76 @@ Research $0 thoroughly:
 
 ## Available Tools Reference
 
-The following tools are currently available for the `allowed-tools` field. This list is generated dynamically and reflects the tools available in this environment, including any configured MCP servers:
-
-!`claude -p "List all available tools you have access to right now, including names and brief descriptions. Format as a markdown table with Tool and Description columns." --print`
-
+The list of tools currently available for the `allowed-tools` field is something you will have to assimilate from your default available tools + MCP server tools.
 ## Skill Creation Process
 
-### Step 1: Gather Requirements
+### Step 1: Discover & Plan
 
-**Tools:** `AskUserQuestion`, `WebSearch`, `Glob`, `Read`, `TodoWrite`
+**Tools:** `EnterPlanMode`, `ExitPlanMode`, `AskUserQuestion`, `WebSearch`, `Glob`, `Read`, `TodoWrite`
 
-When this skill is triggered, begin by briefly explaining what a skill is and then present the default YAML values. Use `AskUserQuestion` for structured option-based questions to gather all required information.
+This is the most important step. Do not jump to YAML configuration or file creation until the skill's scope, approach, and implementation strategy are fully agreed upon with the user.
 
-If the user wants to accomplish something but is unsure of the approach, use `WebSearch` to research libraries, APIs, or patterns relevant to the skill's domain. Use `Glob` and `Read` to explore existing skills in `.claude/skills/` for reference patterns.
+Begin by briefly explaining what a skill is: "A skill is a modular package that extends Claude's capabilities. It lives in a SKILL.md file with YAML frontmatter (configuration) and markdown instructions (what the skill does)."
 
-Use `TodoWrite` to create a task list tracking the skill creation steps.
+Then use `EnterPlanMode` to switch into plan mode. All discovery and research happens within plan mode, where the focus is on understanding the problem before writing any files.
 
-**Initial prompt to the user should include:**
+**While in plan mode:**
 
-1. A brief explanation: "A skill is a modular package that extends Claude's capabilities. It lives in a SKILL.md file with YAML frontmatter (configuration) and markdown instructions (what the skill does)."
+**1a. Understand the domain.** Ask the user what they want the skill to accomplish. Use `AskUserQuestion` for structured option-based questions. Focus on *what* the skill should do, not *how* — the "how" comes from research.
 
-2. Present the default values:
-   - `name`: (derived from skill directory name)
-   - `description`: (user must provide)
-   - `argument-hint`: `""` (no arguments)
-   - `disable-model-invocation`: `false` (Claude can auto-invoke)
-   - `user-invocable`: `true` (visible in `/` menu)
-   - `allowed-tools`: `Read, Grep, Glob`
-   - `model`: `claude-sonnet-4-6`
+**1b. Research the landscape.** Use `WebSearch` to research the available tools, APIs, CLI commands, and MCP servers relevant to the skill's domain. Many tasks can be accomplished multiple ways with different trade-offs:
 
-3. Ask the user for each of the following:
-   - **Name**: What should this skill be called? (lowercase, hyphens, becomes the `/slash-command`)
-   - **Description**: What does this skill do and when should it be used?
-   - **Arguments**: What arguments should be passed when invoking? (e.g., a filename, an issue number, multiple positional args)
-   - **Invocation**: In plain language — should Claude be able to auto-invoke this, or should only the user trigger it manually? Should it appear in the `/` menu?
-   - **Allowed tools**: What tools does this skill need? (e.g., read-only, full file access, shell commands, web access). Refer to the [Available Tools Reference](#available-tools-reference) section above for the current list.
-   - **Model**: Which model should run this skill? (`claude-haiku-4-5` for fast/light, `claude-sonnet-4-6` for balanced, `claude-opus-4-6` for complex reasoning)
-   - **Additional context**: Any other details about what the skill should do, how it should behave, or what domain knowledge it needs?
+- **CLI commands** (e.g., `git`, `gh`, `docker`) — portable, well-documented, but verbose
+- **MCP server tools** — structured, type-safe, but require server configuration
+- **Built-in tools** (e.g., `Bash`, `Read`, `WebFetch`) — always available, no setup
+- **External APIs** — powerful, but need auth and may have rate limits
 
-Avoid asking too many questions in a single message. Group related questions logically and follow up as needed.
+Identify overlapping functionality and trade-offs. Use `Glob` and `Read` to explore existing skills in `.claude/skills/` for reference patterns.
 
-### Step 2: Plan the Reusable Contents
+**1c. Iterate with the user.** Present findings and options using `AskUserQuestion`. Go back and forth to narrow down:
+
+- Which operations does the skill need to support?
+- For each operation, which approach is best? (CLI, MCP, built-in tool, API)
+- What are the trade-offs the user should be aware of?
+- Are there dependencies or prerequisites (e.g., MCP server must be configured)?
+
+**1d. Write the plan and get approval.** Summarize the agreed-upon scope and approach in the plan file, then use `ExitPlanMode` for user approval. The plan should cover:
+
+- Skill name and purpose
+- List of operations/features the skill will support
+- For each operation, the chosen approach (CLI, MCP, built-in, API) and why
+- Which tools the skill will need in `allowed-tools`
+- Any reference files, scripts, or assets needed
+
+Only proceed to Step 2 once the user approves the plan.
+
+### Step 2: Define Configuration
+
+**Tools:** `AskUserQuestion`, `TodoWrite`
+
+With the plan approved, populate the YAML frontmatter values. Use `TodoWrite` to track the remaining creation steps. Present the defaults and ask the user to confirm or override each:
+
+- `name`: (derived from skill directory name)
+- `description`: (user must provide)
+- `argument-hint`: `""` (no arguments)
+- `disable-model-invocation`: `false` (Claude can auto-invoke)
+- `user-invocable`: `true` (visible in `/` menu)
+- `allowed-tools`: `Read, Grep, Glob`
+- `model`: `claude-sonnet-4-6`
+
+Ask the user for each of the following:
+- **Name**: What should this skill be called? (lowercase, hyphens, becomes the `/slash-command`)
+- **Description**: What does this skill do and when should it be used?
+- **Arguments**: What arguments should be passed when invoking? (e.g., a filename, an issue number, multiple positional args)
+- **Invocation**: Should Claude auto-invoke this, or should only the user trigger it manually? Should it appear in the `/` menu?
+- **Allowed tools**: Base this on the plan from Step 1 — the tools, CLIs, and MCP servers agreed upon directly inform this field. Refer to the [Available Tools Reference](#available-tools-reference) section for the current list.
+- **Model**: Which model should run this skill? (`claude-haiku-4-5` for fast/light, `claude-sonnet-4-6` for balanced, `claude-opus-4-6` for complex reasoning)
+
+### Step 3: Plan the Reusable Contents
 
 **Tools:** `Grep`, `Glob`, `WebSearch`
 
-Analyze the user's description and examples to identify reusable resources. Use `Grep` and `Glob` to find similar patterns in existing skills. Use `WebSearch` for documentation on unfamiliar libraries or APIs the skill will work with.
+Analyze the approved plan to identify reusable resources. Use `Grep` and `Glob` to find similar patterns in existing skills. Use `WebSearch` for documentation on unfamiliar libraries or APIs the skill will work with.
 
 Determine what the skill needs beyond SKILL.md:
 
@@ -304,7 +329,7 @@ Determine what the skill needs beyond SKILL.md:
 - **References** for documentation Claude should consult
 - **Assets** for files used in output (templates, images)
 
-### Step 3: Create the Skill Directory
+### Step 4: Create the Skill Directory
 
 **Tools:** `Bash`
 
@@ -314,9 +339,9 @@ Create the skill directory at `<project-root>/.claude/skills/<skill-name>/`:
 mkdir -p .claude/skills/<skill-name>
 ```
 
-Create subdirectories as needed for any references, scripts, or assets identified in Step 2.
+Create subdirectories as needed for any references, scripts, or assets identified in Step 3.
 
-### Step 4: Write the Skill Content
+### Step 5: Write the Skill Content
 
 **Tools:** `Write`, `Edit`, `Read`
 
@@ -324,13 +349,13 @@ Use `Write` to create a new SKILL.md. Use `Edit` to modify an existing SKILL.md 
 
 **Writing style:** Use imperative/infinitive form (verb-first instructions), not second person. Use objective, instructional language (e.g., "To accomplish X, do Y" rather than "You should do X").
 
-Start with the [starter template](#starter-template) frontmatter populated with the user's answers from Step 1, then complete the markdown body by answering:
+Start with the [starter template](#starter-template) frontmatter populated with the user's answers from Step 2, then complete the markdown body by answering:
 
 1. What is the purpose of the skill?
 2. When should the skill be used?
 3. How should Claude use it? Reference all bundled resources so Claude knows about them.
 
-### Step 5: Test and Iterate
+### Step 6: Test and Iterate
 
 **Tools:** `Bash`, `Read`, `Edit`
 

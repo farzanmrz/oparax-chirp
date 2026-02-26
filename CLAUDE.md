@@ -1,12 +1,6 @@
-<!-- Modular reference approach: keep CLAUDE.md under 150 lines. Details live in .claude/reference/ -->
-
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Permanent Rule
-
-CLAUDE.md must never exceed 150 lines. If any future change would push it over, immediately extract sections to `.claude/reference/` and update the reference table.
 
 ## Project Overview
 
@@ -14,25 +8,19 @@ Oparax is an AI-powered social media automation tool for professional news repor
 
 ## Tech Stack
 
-| Category | Tool | Version |
-| -------- | ---- | ------- |
-| Framework | Next.js | 16.1.6 |
-| UI Library | React | 19.2.3 |
-| Language | TypeScript | 5.x |
-| Styling | Tailwind CSS | 4.x |
-| Components | shadcn/ui | latest |
-| Auth/DB | Supabase (supabase-js) | 2.97.0 |
-| SSR Auth | @supabase/ssr | 0.8.0 |
-| Testing | Vitest | 4.0.18 |
-| Testing | React Testing Library | 16.3.2 |
-| Python | Python | 3.11+ |
-
-## Architecture
-
-Monorepo with two separate concerns:
-
-- **Root (`/`)** — Python backend for X API integration and content generation
-- **`frontend/`** — Next.js 16 application (App Router, TypeScript, Tailwind CSS 4)
+| Category | Package | Version | Purpose |
+| -------- | ------- | ------- | ------- |
+| Framework | Next.js (`next`) | 16.1.6 | React meta-framework — SSR, file-based routing, API routes |
+| UI | React (`react`) | 19.2.3 | Component-based UI rendering |
+| Language | TypeScript (`typescript`) | 5.9.3 | Static type-checking for JavaScript |
+| Styling | Tailwind CSS (`tailwindcss`) | 4.2.0 | Utility-first CSS framework |
+| Components | shadcn/ui (`shadcn`) | 3.8.5 | Pre-built, customizable UI components (copied into codebase) |
+| BaaS | Supabase (`@supabase/supabase-js`) | 2.97.0 | Supabase client — auth, database queries, storage |
+| BaaS | Supabase SSR (`@supabase/ssr`) | 0.8.0 | Server-side auth helpers — cookie/session management for Next.js |
+| Testing | Vitest (`vitest`) | 4.0.18 | Unit/integration test runner (Vite-native) |
+| Testing | React Testing Library (`@testing-library/react`) | 16.3.2 | React component testing utilities |
+| Runtime | Python | 3.11.14 | Backend scripts for X API integration |
+| Deployment | Vercel | — | Frontend hosting with auto-deploy from GitHub |
 
 ## Environment
 
@@ -40,47 +28,111 @@ Monorepo with two separate concerns:
 - **Python Package Manager**: `uv` — run `uv sync` at root for Python dependencies
 - **Deployment**: Vercel (frontend), TBD (backend)
 
-## Development Commands
 
-### Frontend (run from `frontend/`)
+## Project Layout
 
-```bash
-pnpm dev          # Dev server at http://localhost:3000 (Turbopack)
-pnpm build        # Production build
-pnpm start        # Serve production build
-pnpm lint         # ESLint with Next.js core-web-vitals + TypeScript rules
-pnpm test         # Run Vitest tests (single run)
-pnpm test:watch   # Run Vitest in watch mode
+```text
+oparax-chirp/
+├── frontend/                      # Next.js web application
+│   ├── app/                       # App Router — file-based routing
+│   │   ├── layout.tsx             # Root layout (fonts, <html>)
+│   │   ├── globals.css            # Tailwind v4 theme + all colors
+│   │   ├── (auth)/                # Route group — no URL impact
+│   │   │   ├── layout.tsx         # Auth layout (centered card)
+│   │   │   ├── page.tsx           # Auth page at "/" (tabbed signin/signup)
+│   │   │   ├── login/actions.ts   # Login server action
+│   │   │   └── signup/            # Signup action + check-email page
+│   │   ├── auth/confirm/route.ts  # Email verification handler
+│   │   └── dashboard/page.tsx     # Protected page (redirects if not logged in)
+│   ├── lib/                       # Shared utilities
+│   │   ├── supabase/client.ts     # Browser Supabase client
+│   │   ├── supabase/server.ts     # Server Supabase client
+│   │   ├── supabase/middleware.ts  # Session refresh (called by proxy.ts)
+│   │   ├── validation.ts          # validateAuthForm()
+│   │   ├── auth-errors.ts         # mapAuthError()
+│   │   └── utils.ts               # cn() helper for class merging
+│   ├── __tests__/auth/            # Vitest tests (auth suite)
+│   ├── proxy.ts                   # Runs on EVERY request — refreshes auth
+│   ├── components.json            # shadcn/ui config (no components added yet)
+│   ├── next.config.ts             # Next.js config
+│   ├── vitest.config.ts           # Test runner config
+│   └── package.json               # Dependencies and scripts
+├── scripts/
+│   └── search_test.py             # X API v2 search test
+├── .claude/
+│   └── reference/
+│       ├── vision.md              # Product vision and roadmap
+│       ├── project-info.md        # Accounts, env vars, commands, setup
+│       └── userjourney.md         # Session log — what was done, what's next
+├── CLAUDE.md                      # This file
+├── pyproject.toml                 # Python config
+└── .env                           # API credentials (git-ignored)
 ```
-
-### Python (run from root)
-
-```bash
-uv run python scripts/search_test.py   # Test X API v2 search endpoint
-```
-
-## External Services
-
-- **X API v2** — Tweet search, user data (`/tweets/search/recent`)
-- **Supabase** — Auth (email/password, X OAuth planned) and database
-- **Claude API** — Content generation (planned)
-- **Grok API** — Intelligence/analysis (planned)
-
-## Python Backend
-
-- Python 3.11+ with `uv` package manager
-- Dependencies: `python-dotenv`, `requests`
-- `scripts/` contains utility/test scripts for API exploration
 
 ## Reference Documentation
 
-Read these documents when working on specific areas:
-
 | Document | When to Read |
 | -------- | ------------ |
-| `.claude/reference/project-layout.md` | Understanding file structure, what files do, how they connect |
-| `.claude/reference/frontend-nextjs.md` | Working on frontend pages, components, styling, Tailwind, or Next.js configuration |
-| `.claude/reference/supabase-auth.md` | Working on authentication, Supabase client code, proxy/middleware, or session handling |
-| `.claude/reference/testing.md` | Writing tests, running tests, or modifying test infrastructure |
-| `.claude/reference/environment.md` | Setting up env vars, deployment config, or troubleshooting credentials |
-| `.claude/reference/vercel-deploy.md` | Deploying to Vercel or configuring deployment settings |
+| `.claude/reference/vision.md` | Product vision, core loop, long-term direction |
+| `.claude/reference/project-info.md` | Accounts, env vars, API setup, dev commands |
+| `.claude/reference/userjourney.md` | Start of session (context), end of session (update) |
+
+## Rules
+
+### Do's
+
+- Use `getUser()` on the server (revalidates JWT with Supabase)
+- Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` everywhere
+- Use `getAll`/`setAll` batch cookie methods in Supabase SSR
+- Use `@/` import alias (never relative paths)
+- Use semantic color tokens (`bg-primary`, `text-muted-foreground`)
+- Use `"use client"` only when interactivity is needed
+- Add `cleanup()` in `afterEach` for component tests
+
+### Don'ts
+
+- Never commit `.env` or `.env.local`
+- Never use `getSession()` on the server — doesn't revalidate JWT
+- Never use `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Never import from `@supabase/auth-helpers-nextjs` (deprecated)
+- Never run code between `createServerClient()` and `getUser()` in proxy
+- Never use individual cookie methods (`get`, `set`, `remove`) — use batch
+- Never create `tailwind.config.ts` — v4 uses CSS-first config in `globals.css`
+- Never use `@tailwind` directives — use `@import "tailwindcss"`
+- Never use `darkMode: 'class'` — v4 uses `prefers-color-scheme` media query
+- Never use raw color values (`bg-red-500`) — use semantic tokens
+- Never use opacity modifiers on foreground (`text-foreground/60`)
+
+### Known Issues / TODOs
+
+- **Duplicate email signup**: Supabase silently succeeds (anti-enumeration) — shows "check email" but no email sent. Need client-side check.
+- **Email confirmation template**: Must point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+- **Proxy route protection**: Currently page-level only (`dashboard/page.tsx`). Should add proxy-level redirect for protected routes.
+
+## Conventions
+
+### Next.js
+
+- App Router, file-based routing in `frontend/app/`
+- `proxy.ts` = Next.js per-request hook (refreshes auth). `lib/supabase/middleware.ts` = utility it calls (not the framework feature — confusing name from Supabase docs)
+- TypeScript strict mode, ESLint flat config (v9+)
+- Server Components by default
+
+### Tailwind CSS v4
+
+- Config lives in `globals.css` via `@theme inline` (no config file)
+- `@import "tailwindcss"` instead of `@tailwind` directives
+- Dark mode via `prefers-color-scheme` media query
+- Add shadcn components: `pnpm dlx shadcn@latest add <component>` from `frontend/`
+
+### Testing
+
+- Tests in `frontend/__tests__/`, named `{feature}-{type}.test.ts`
+- `pnpm test` (single run) / `pnpm test:watch` from `frontend/`
+- Vitest config at `frontend/vitest.config.ts`, `@` alias maps to `frontend/`
+- Mock `redirect()`: `await expect(fn()).rejects.toThrow("NEXT_REDIRECT")`
+
+## Session Workflow
+
+- **Start of session**: Read `userjourney.md` to understand where things left off and what's remaining.
+- **End of session**: Update `userjourney.md` with a new dated entry — what was done this session and what's remaining next.
