@@ -29,7 +29,7 @@ export function NavMain({
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               asChild
-              isActive={item.url === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.url)}
+              isActive={item.url === "/dashboard" ? pathname === "/dashboard" || pathname.startsWith("/dashboard/workflows") : pathname.startsWith(item.url)}
               tooltip={item.title}
             >
               <Link href={item.url}>
