@@ -23,6 +23,9 @@
     "react-dom": "19.2.3",
     "tailwind-merge": "^3.5.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "msw"]
+  },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
