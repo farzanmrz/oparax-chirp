@@ -42,3 +42,20 @@ export function isValidationError(
 ): result is ValidationError {
   return "message" in result;
 }
+
+export function validateSignupForm(
+  formData: FormData
+): ValidationResult | ValidationError {
+  const base = validateAuthForm(formData);
+  if (isValidationError(base)) return base;
+
+  const rawConfirm = formData.get("confirm-password");
+  if (!rawConfirm || typeof rawConfirm !== "string") {
+    return { message: "Please confirm your password." };
+  }
+  if (rawConfirm !== base.password) {
+    return { message: "Passwords do not match." };
+  }
+
+  return base;
+}

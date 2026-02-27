@@ -1,15 +1,14 @@
-// Signup server action — validates form input, calls Supabase signUp, redirects to check-email page.
 "use server";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { validateAuthForm, isValidationError } from "@/lib/validation";
+import { validateSignupForm, isValidationError } from "@/lib/validation";
 import { mapAuthError } from "@/lib/auth-errors";
 
 export async function signup(formData: FormData) {
-  const validated = validateAuthForm(formData);
+  const validated = validateSignupForm(formData);
   if (isValidationError(validated)) {
-    redirect(`/?tab=signup&error=${encodeURIComponent(validated.message)}`);
+    redirect(`/signup?error=${encodeURIComponent(validated.message)}`);
   }
 
   const supabase = await createClient();
@@ -20,7 +19,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/?tab=signup&error=${encodeURIComponent(mapAuthError(error.message))}`);
+    redirect(`/signup?error=${encodeURIComponent(mapAuthError(error.message))}`);
   }
 
   redirect("/signup/check-email");

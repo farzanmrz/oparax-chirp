@@ -19,10 +19,14 @@
 
 ## Vercel
 
-- Not yet deployed (setup pending)
-- Root directory must be set to `frontend`
-- Env vars (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) must be added in Vercel dashboard
-- After deploy: add Vercel URL to Supabase redirect URLs
+- **Live** at [oparax.com](https://oparax.com)
+- Root directory set to `frontend`
+- Auto-deploys from `main` branch on GitHub push
+- Env vars (`NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) configured
+  in Vercel dashboard
+- Custom domain: `oparax.com` (GoDaddy DNS —
+  A record → Vercel IP, CNAME www → cname.vercel-dns.com)
 
 ## Environment Variables
 

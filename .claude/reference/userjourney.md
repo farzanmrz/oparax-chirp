@@ -10,7 +10,50 @@
 - **Consolidated 6 reference files into CLAUDE.md** — Deleted `environment.md`, `frontend-nextjs.md`, `project-layout.md`, `supabase-auth.md`, `testing.md`, `vercel-deploy.md`. Moved critical rules to Do's/Don'ts, conventions inline, project layout as nested tree
 - **userjourney.md** — Created this session log
 - **session-log skill** — Created `.claude/skills/session-log/SKILL.md`: logs session work to `userjourney.md`, tags entries with date/time/session ID, always asks user for what's remaining (never infers), auto git add/commit/push with user confirmation
+- **GitHub Issue #3 rewritten** — Replaced outdated description with phased
+  plan: Phase 1 ✅ DONE (docs, shadcn init, test migration, README, skills),
+  Phase 2 (Vercel + explore templates/shadcn), Phase 3 (build UI),
+  Phase 4 (wire up auth + backend); long-term workflow scope preserved
+- **Tech stack discussion** — Educational session: React/Next.js/Vercel
+  relationship, TypeScript value, Tailwind v4 vs v3, Supabase as PostgreSQL
+  wrapper, Vitest vs Vite, React Router irrelevance, shadcn CLI workflow,
+  Vercel template mechanics (creates separate repo, not a branch)
 
 ### What's remaining
 
-- **Vercel deployment** — Import the existing `farzanmrz/oparax-chirp` repo correctly (Import flow, not Create new) and configure root directory, env vars, Supabase redirect URLs
+- **Vercel deployment** — Import `farzanmrz/oparax-chirp` (Import flow,
+  not Create new), set root dir to `frontend`, add Supabase env vars,
+  add Vercel URL to Supabase redirect URLs
+
+## 2026-02-26 16:35 — Session `444581b9-b43c-4dd6-b8c6-30f72f24a1cf`
+
+### What was done
+
+- **Vercel deployment** — Diagnosed why Vercel showed "Other"
+  (root `package.json` has no `next` dep; Next.js lives in
+  `frontend/`); fixed by setting Root Directory to `frontend`;
+  deployed successfully
+- **oparax.com domain** — Configured live custom domain on
+  Vercel; updated GoDaddy DNS (A `@` → Vercel IP, CNAME
+  `www` → `cname.vercel-dns.com`); site live at oparax.com
+- **DNS education** — Explained DNS, nameservers, A vs CNAME
+  records, Option A vs B, 301 vs 307 redirects
+- **shadcn UI rebuild** — Re-initialized shadcn with Nova
+  style, gray oklch palette, Hugeicons, small radius; swapped
+  font from Geist to Nunito Sans; installed `login-04` and
+  `signup-04` blocks; created separate `/login` and `/signup`
+  routes (replacing tab-based `(auth)/` single page); wired
+  server actions with error display via searchParams; added
+  confirm password validation (`validateSignupForm`); replaced
+  Meta social icon with X.com/Twitter; deleted old `(auth)/`
+  route group and stale root `package.json`; build passes
+- **Documentation update** — Updated CLAUDE.md (project layout
+  tree, tech stack, known issues, deployment status),
+  project-info.md (Vercel now live), vision.md (build status),
+  README.md (full rewrite with current structure and versions)
+
+### What's remaining
+
+- **Agentic workflow UI** — Continue work on the
+  `ft/3-agentic-workflow-ui` branch: build out the
+  agentic workflow interface with shadcn components

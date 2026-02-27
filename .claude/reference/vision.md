@@ -47,12 +47,16 @@ Output should be **indistinguishable** from the user's own writing. Shaped by th
 
 ### Build Status
 
-**Done:** Email/password auth (Supabase)
+**Done:**
+
+- Email/password auth (Supabase)
+- Login/signup UI (shadcn Nova theme, Nunito Sans font)
+- Vercel deployment at oparax.com
 
 **Next up:**
 
 - X.com OAuth (required for posting on behalf of user)
-- Frontend (login/signup, dashboard, draft review UI)
+- Dashboard and draft review UI
 - Grok 4.2 integration for news detection
 - Automated trigger (scheduled job every 30-60 min)
 
