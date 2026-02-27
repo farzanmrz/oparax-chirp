@@ -1,22 +1,36 @@
 ---
 name: update-claude-md
-description: Update CLAUDE.md and reference files while enforcing the 150-line limit
-argument-hint: <what to add or update in project documentation>
+description: Update CLAUDE.md, reference files, and README.md when project documentation is stale. Use after significant code changes, new features, tech stack updates, or deployment changes.
+argument-hint: "[what to update]"
+disable-model-invocation: false
+user-invocable: true
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash
+model: claude-sonnet-4-6
 ---
 
 # Update CLAUDE.md
 
-Update the project documentation with: **$ARGUMENTS**
+Update project documentation. If arguments are provided, focus on: **$ARGUMENTS**
+
+## Scope
+
+This skill manages three documentation files:
+
+| File | Update when... |
+| ---- | -------------- |
+| `CLAUDE.md` | Project layout, tech stack, rules, conventions, or known issues changed |
+| `.claude/reference/*.md` | Detail that doesn't fit in CLAUDE.md's 150-line limit |
+| `README.md` | New user-visible features, tech stack changes, deployment/domain changes, roadmap progress |
 
 ## Rules
 
-1. **Read CLAUDE.md first** — always start by reading the current contents
-2. **150-line hard limit** — CLAUDE.md must never exceed 150 lines (including blank lines and comments)
-3. **Extract to reference files** — if adding content would push CLAUDE.md over 150 lines, create or update a file in `.claude/reference/` instead and add a row to the reference table in CLAUDE.md
-4. **Keep CLAUDE.md scannable** — it should contain only high-level project info (overview, tech stack, commands, architecture, reference table). Detailed rules, patterns, and guides belong in reference files
-5. **Update the reference table** — if you create a new reference file, add it to the "Reference Documentation" table in CLAUDE.md with a clear "When to Read" description
-6. **Check for existing references** — before creating a new reference file, check if the content belongs in an existing one:
+1. **Read before writing** — always read the target file's current contents first
+2. **Skip is the default** — only update sections that are genuinely stale or missing info. Do not make cosmetic or speculative changes.
+3. **150-line hard limit** — CLAUDE.md must never exceed 150 lines (including blank lines)
+4. **Extract to reference files** — if adding content would push CLAUDE.md over 150 lines, create or update a file in `.claude/reference/` and add a row to the reference table
+5. **Keep CLAUDE.md scannable** — high-level project info only (overview, tech stack, layout, rules, reference table). Detailed guides belong in reference files.
+6. **Update the reference table** — if a new reference file is created, add it to the "Reference Documentation" table in CLAUDE.md
+7. **Check for existing references** — before creating a new file, check if the content belongs in an existing one:
 
 ```
 Glob with pattern=".claude/reference/*.md"
@@ -26,16 +40,40 @@ Glob with pattern=".claude/reference/*.md"
 
 | File | Purpose |
 | ---- | ------- |
-| `project-layout.md` | File structure and what each file does |
-| `frontend-nextjs.md` | Frontend pages, components, styling, Tailwind, Next.js config |
-| `supabase-auth.md` | Authentication, Supabase clients, proxy/middleware, sessions |
-| `testing.md` | Test conventions, running tests, test infrastructure |
-| `environment.md` | Environment variables, deployment config, credentials |
-| `vercel-deploy.md` | Vercel deployment setup and configuration |
+| `vision.md` | Product vision, core loop, roadmap, build status |
+| `project-info.md` | Accounts, env vars, API setup, dev commands |
+| `userjourney.md` | Session log — what was done, what's next |
 
-## After Updating
+## Process
 
-1. Count lines in CLAUDE.md: `wc -l CLAUDE.md`
+### 1. Assess what changed
+
+Review the conversation history and recent git activity to determine which documentation files need updates. For each file, ask: "Is any section now stale or missing info?"
+
+### 2. Update CLAUDE.md (if needed)
+
+Common sections that go stale:
+- **Project Layout** tree — new files/directories added or removed
+- **Known Issues / TODOs** — items resolved or new ones discovered
+- **Tech Stack** table — packages added, removed, or version-bumped
+- **Rules** (Do's / Don'ts) — new conventions established
+- **Reference Documentation** table — new reference files created
+
+### 3. Update reference files (if needed)
+
+Only if CLAUDE.md changes reference something that needs more detail. Read the relevant file, then Edit.
+
+### 4. Update README.md (if needed)
+
+Common sections that go stale:
+- Feature descriptions or roadmap status
+- Tech stack table
+- Deployment info or live URLs
+- Getting started / setup instructions
+
+### 5. After updating
+
+1. Count lines: `wc -l CLAUDE.md`
 2. If over 150 lines, extract sections to reference files
-3. Verify the reference table lists all files in `.claude/reference/`
-4. Report what was changed and the current line count
+3. Verify the reference table in CLAUDE.md lists all files in `.claude/reference/`
+4. Report what was changed (or confirm nothing needed updating) and the current CLAUDE.md line count

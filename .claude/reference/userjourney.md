@@ -69,3 +69,86 @@
 
 - **Button feedback** — Buttons still lack sufficient visual
   feedback on click/hover per user notes; revisit styling
+
+## 2026-02-26 23:45 — Session `444581b9-b43c-4dd6-b8c6-30f72f24a1cf`
+
+### What was done
+
+- **Vercel build warnings** — Fixed `"Ignored build scripts"`
+  warning by adding `pnpm.onlyBuiltDependencies` for esbuild
+  and msw; fixed `"outputFileTracingRoot and turbopack.root"`
+  conflict by removing now-unnecessary `turbopack.root` from
+  `next.config.ts` (root `package-lock.json` that caused it
+  is gone); both warnings resolved on Vercel
+- **Button UX** — Added `active:` press states to outline,
+  ghost, secondary, and destructive variants; created
+  `SubmitButton` client component using `useFormStatus()` to
+  show spinner and disable on submit (forms stay as server
+  components); wired into login and signup forms — eliminates
+  double-click errors and missing loading feedback
+- **lib/ file recovery** — Core files (`lib/supabase/`,
+  `lib/validation.ts`, `lib/auth-errors.ts`, `lib/utils.ts`,
+  `app/auth/confirm/`) were accidentally deleted locally;
+  restored with `git restore`; build confirmed passing
+- **NOTES.md cleanup** — Removed resolved Frontend UI section
+  (button feedback, double-click, loading state all fixed)
+
+### What's remaining
+
+- **Agentic workflow UI** — Build the core product feature:
+  agentic workflow interface on the dashboard
+
+## 2026-02-27 03:49 — Session `59a96a69-8bd6-4fc5-971d-611c840e80f1`
+
+### What was done
+
+- **beta.oparax.com** — Set up staging subdomain on Vercel: added CNAME
+  record in GoDaddy (`beta` → project-specific Vercel DNS), assigned
+  domain to Preview environment / `ft/3-agentic-workflow-ui` branch in
+  Vercel; added `https://beta.oparax.com/**` to Supabase redirect URLs
+- **Domain redirects** — Pointed `oparax.info`, `oparax.net`, `oparax.org`
+  (and `www.*` variants) to `www.oparax.com` via 301 redirects in Vercel;
+  added DNS records in GoDaddy for each (Vercel-first workflow: add domain
+  in Vercel first to get recommended DNS values, then set in GoDaddy)
+- **Duplicate email signup fix** — Detected Supabase anti-enumeration fake
+  success (`data.user.identities === []`) in signup action; redirects back
+  to `/signup?error=...` with clear message and sign-in link instead of
+  silently landing on check-email page
+- **Test suite fixes** — Fixed stale `@/app/(auth)/...` import paths in
+  `login-actions.test.ts` and `signup-actions.test.ts`; fixed redirect
+  path assertions (`/?tab=signup` → `/signup?error=`); added
+  `confirm-password` to `createFormData` helper; added new test case for
+  empty-identities duplicate detection; removed dead `auth-page.test.tsx`
+  (tested a combined auth page component that no longer exists); all
+  37 tests passing
+- **Session skills restructure** — Renamed `session-log` →
+  `update-user-journey`; created `update-notes` skill for NOTES.md
+  management; created `wrap-up` orchestrator (manual, 4-phase: git commit,
+  userjourney, NOTES.md, conditional CLAUDE.md/README.md); updated
+  `update-claude-md` to fix stale reference table and add README.md scope;
+  updated CLAUDE.md Session Workflow section; trimmed CLAUDE.md to 150 lines
+
+### What's remaining
+
+- **Agentic workflow UI** — Build the core product feature:
+  agentic workflow interface on the dashboard
+
+## 2026-02-27 10:53 — Session `df04d397-bca7-4eeb-96dd-1fb82fea696e`
+
+### What was done
+
+- **UI/UX planning** — Full product architecture session: planned page structure (`/dashboard`, `/dashboard/workflows/new`, `/dashboard/workflows/[id]`, `/dashboard/settings`), sidebar layout (2 nav items, collapsible icon mode), empty state → wizard → detail page flow; scoped current branch to just the post-login landing shell
+- **shadcn components installed** — sidebar, breadcrumb, dropdown-menu, avatar, tooltip, badge, skeleton, sonner, sheet; also `@hugeicons/core-free-icons` (required by Nova style components)
+- **Dashboard layout** — Created `frontend/app/dashboard/layout.tsx`: sidebar shell with `SidebarProvider`, auth guard moved here (protects all `/dashboard/*` automatically), top header bar with `SidebarTrigger` + breadcrumb
+- **Sidebar components** — `app-sidebar.tsx` (Oparax logo, nav, user footer), `nav-main.tsx` (flat nav with `usePathname` active state), `nav-user.tsx` (avatar initials + sign-out dropdown)
+- **Dashboard home page** — Rewrote `dashboard/page.tsx`: empty state (icon + "Create Workflow" CTA) or workflow card list with status badge + metadata
+- **Workflow card** — `workflow-card.tsx` with frequency labels, handle count, `timeAgo` relative time
+- **Settings page** — `dashboard/settings/page.tsx`: sign out + "Coming soon" for X OAuth and Voice Profile
+- **Root layout** — Added `TooltipProvider` (sidebar dependency) and `Toaster` (sonner) to `app/layout.tsx`
+- **Supabase migration** — `public.workflows` table: user_id FK, frequency, handles array, status, RLS policy
+- **Turbopack fix** — Removed root `package.json` / `package-lock.json` (stale npm artifacts causing Turbopack to infer wrong workspace root → `tailwindcss` resolution failure in dev mode)
+- **GitHub issues + branches** — Created #10–#14 covering the full product roadmap; local branches `ft/10-*` through `ft/14-*`
+
+### What's remaining
+
+- **Workflow Creation Wizard** — 4-step form at `/dashboard/workflows/new` (issue #10, branch `ft/10-workflow-creation-wizard`)

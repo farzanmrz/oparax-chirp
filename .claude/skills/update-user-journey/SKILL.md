@@ -1,6 +1,6 @@
 ---
-name: session-log
-description: Log what was done in this Claude Code session and what's remaining next. Use this when the user says things like "let's wrap up", "end of session", "log this session", "update the journey", or explicitly invokes /session-log.
+name: update-user-journey
+description: Update userjourney.md with what was done this session and what's next. Use when the user says "log this session", "update the journey", or invokes /update-user-journey.
 argument-hint: ""
 disable-model-invocation: false
 user-invocable: true
@@ -8,7 +8,7 @@ allowed-tools: Read, Edit, Bash, Grep, Glob, AskUserQuestion
 model: claude-sonnet-4-6
 ---
 
-# Session Log
+# Update User Journey
 
 Append a new dated entry to `.claude/reference/userjourney.md` documenting what was accomplished in this session and what the user wants to do next.
 
@@ -37,12 +37,10 @@ Run `git status` to check for uncommitted changes.
 
 If there are changes (staged, unstaged, or untracked):
 
-1. Ask the user: "Should I commit and push your changes?" with options "Yes (Recommended)" and "No, skip".
-2. If yes:
+Always add, commit and push your changes:
    - Run `git add -A`
    - Run `git commit` with a concise message summarizing the session's work
    - Run `git push` to the current branch
-3. If no, skip and proceed to Step 2.
 
 ### 2. Gather "What was done"
 
@@ -52,11 +50,9 @@ Run `git diff --stat` and `git log --oneline -10` to cross-reference with actual
 
 ### 3. Ask for "What's remaining"
 
-**NEVER infer or assume what's remaining.** Always ask the user directly:
+**INFER or assume what's remaining.** Always a single feature user wants to immediately target next.
 
-Use `AskUserQuestion` with the question: "What's the immediate next thing you want to focus on in the next session?"
-
-Suggestions may be offered as options based on conversation context, but always include an "Other" option (automatically provided). Only record what the user explicitly confirms.
+Suggestions are derived based on conversation context, but always consider user might have stated "Other" priorities explicitly at the end or in the middle of conversation.
 
 ### 4. Write the entry
 

@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Oparax is an AI-powered social media automation tool for professional news reporters. It monitors X (Twitter) for breaking stories and drafts posts in the user's voice. The primary use case is a football news reporter with 400k+ followers on X.
@@ -35,7 +33,7 @@ Oparax is an AI-powered social media automation tool for professional news repor
 oparax-chirp/
 ├── frontend/                      # Next.js web application
 │   ├── app/                       # App Router — file-based routing
-│   │   ├── layout.tsx             # Root layout (Nunito Sans font, <html>)
+│   │   ├── layout.tsx             # Root layout (Nunito Sans, TooltipProvider, Toaster)
 │   │   ├── globals.css            # Tailwind v4 theme (gray oklch palette)
 │   │   ├── page.tsx               # Root "/" — redirects to /login
 │   │   ├── login/                 # Login route
@@ -46,17 +44,21 @@ oparax-chirp/
 │   │   │   ├── actions.ts         # Signup server action
 │   │   │   └── check-email/page.tsx  # Post-signup confirmation
 │   │   ├── auth/confirm/route.ts  # Email verification handler
-│   │   └── dashboard/page.tsx     # Protected page (redirects if not logged in)
+│   │   └── dashboard/             # Protected section (auth guard in layout)
+│   │       ├── layout.tsx         # Sidebar shell + auth guard (protects all /dashboard/*)
+│   │       ├── page.tsx           # Workflow list or empty state
+│   │       └── settings/page.tsx  # Account settings (sign out, coming-soon placeholders)
 │   ├── components/                # UI components
+│   │   ├── app-sidebar.tsx        # Main sidebar (logo, nav, user footer)
+│   │   ├── nav-main.tsx           # Flat nav with active state via usePathname
+│   │   ├── nav-user.tsx           # User dropdown (avatar initials + sign-out)
+│   │   ├── workflow-card.tsx      # Workflow card for dashboard list
 │   │   ├── login-form.tsx         # Login form (shadcn login-04 block)
 │   │   ├── signup-form.tsx        # Signup form (shadcn signup-04 block)
 │   │   └── ui/                    # shadcn base components
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── field.tsx
-│   │       ├── input.tsx
-│   │       ├── label.tsx
-│   │       └── separator.tsx
+│   │       ├── button.tsx, card.tsx, field.tsx, input.tsx, label.tsx, separator.tsx
+│   │       └── sidebar.tsx, avatar.tsx, badge.tsx, breadcrumb.tsx, dropdown-menu.tsx
+│   │           sheet.tsx, skeleton.tsx, sonner.tsx, tooltip.tsx
 │   ├── lib/                       # Shared utilities
 │   │   ├── supabase/client.ts     # Browser Supabase client
 │   │   ├── supabase/server.ts     # Server Supabase client
@@ -81,6 +83,7 @@ oparax-chirp/
 ├── NOTES.md                       # Brain dump — low-priority bugs & feature ideas
 ├── pyproject.toml                 # Python config
 └── .env                           # API credentials (git-ignored)
+# Note: root package.json / package-lock.json removed — they caused Turbopack dev-mode errors
 ```
 
 ## Reference Documentation
@@ -92,43 +95,6 @@ oparax-chirp/
 | `.claude/reference/userjourney.md` | Start of session (context), end of session (update) |
 | `NOTES.md` | Low-priority bugs and feature ideas noticed by the user (brain dump, not urgent) |
 
-## Rules
-
-### Do's
-
-- Use `getUser()` on the server (revalidates JWT with Supabase)
-- Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` everywhere
-- Use `getAll`/`setAll` batch cookie methods in Supabase SSR
-- Use `@/` import alias (never relative paths)
-- Use semantic color tokens (`bg-primary`, `text-muted-foreground`)
-- Use `"use client"` only when interactivity is needed
-- Add `cleanup()` in `afterEach` for component tests
-
-### Don'ts
-
-- Never commit `.env` or `.env.local`
-- Never use `getSession()` on the server — doesn't revalidate JWT
-- Never use `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Never import from `@supabase/auth-helpers-nextjs` (deprecated)
-- Never run code between `createServerClient()` and `getUser()` in proxy
-- Never use individual cookie methods (`get`, `set`, `remove`) — use batch
-- Never create `tailwind.config.ts` — v4 uses CSS-first config in `globals.css`
-- Never use `@tailwind` directives — use `@import "tailwindcss"`
-- Never use `darkMode: 'class'` — v4 uses `prefers-color-scheme` media query
-- Never use raw color values (`bg-red-500`) — use semantic tokens
-- Never use opacity modifiers on foreground (`text-foreground/60`)
-
-### Known Issues / TODOs
-
-- **Duplicate email signup**: Supabase silently succeeds
-  (anti-enumeration) — shows "check email" but no email sent.
-  Need client-side check.
-- **Email confirmation template**: Must point to
-  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-- **Proxy route protection**: Currently page-level only
-  (`dashboard/page.tsx`). Should add proxy-level redirect.
-- **Social login buttons**: Apple, Google, X buttons render
-  but are non-functional (visual only for now)
 
 ## Conventions
 
@@ -156,4 +122,4 @@ oparax-chirp/
 ## Session Workflow
 
 - **Start of session**: Read `userjourney.md` to understand where things left off and what's remaining.
-- **End of session**: Update `userjourney.md` with a new dated entry — what was done this session and what's remaining next.
+- **End of session**: Run `/wrap-up` (git commit, userjourney.md, NOTES.md, conditional CLAUDE.md/README.md). Individual: `/update-user-journey`, `/update-notes`, `/update-claude-md`.

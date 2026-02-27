@@ -1,6 +1,10 @@
 // Root layout — wraps every page in the app. Loads fonts and global CSS.
 import type { Metadata } from "next";
 import { Nunito_Sans } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from '@vercel/analytics/next';
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const nunitoSans = Nunito_Sans({
@@ -22,7 +26,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${nunitoSans.variable} antialiased`}>
-        {children}
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
+        <Toaster />
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

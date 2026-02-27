@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { login } from "@/app/(auth)/login/actions";
+import { login } from "@/app/login/actions";
 
 // Mock next/navigation
 const mockRedirect = vi.fn();
@@ -65,7 +65,7 @@ describe("login action", () => {
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signin&error=Invalid%20email%20or%20password."
+      "/login?error=Invalid%20email%20or%20password."
     );
   });
 
@@ -82,7 +82,7 @@ describe("login action", () => {
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signin&error=Invalid%20email%20or%20password."
+      "/login?error=Invalid%20email%20or%20password."
     );
   });
 
@@ -99,7 +99,7 @@ describe("login action", () => {
 
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signin&error=")
+      expect.stringContaining("/login?error=")
     );
   });
 
@@ -112,7 +112,7 @@ describe("login action", () => {
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signin&error=")
+      expect.stringContaining("/login?error=")
     );
   });
 
@@ -123,7 +123,7 @@ describe("login action", () => {
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signin&error=")
+      expect.stringContaining("/login?error=")
     );
   });
 
@@ -133,7 +133,7 @@ describe("login action", () => {
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signin&error=")
+      expect.stringContaining("/login?error=")
     );
   });
 
@@ -143,7 +143,7 @@ describe("login action", () => {
     await expect(login(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignInWithPassword).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signin&error=")
+      expect.stringContaining("/login?error=")
     );
   });
 });
