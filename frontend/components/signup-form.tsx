@@ -9,6 +9,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { SubmitButton } from "@/components/submit-button"
 import { signup } from "@/app/signup/actions"
 
 export function SignupForm({
@@ -69,7 +70,7 @@ export function SignupForm({
                 </FieldDescription>
               </Field>
               <Field>
-                <Button type="submit" className="w-full">Create Account</Button>
+                <SubmitButton type="submit" className="w-full">Create Account</SubmitButton>
               </Field>
               <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card">
                 Or continue with
