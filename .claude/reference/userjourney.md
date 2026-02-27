@@ -132,3 +132,23 @@
 
 - **Agentic workflow UI** — Build the core product feature:
   agentic workflow interface on the dashboard
+
+## 2026-02-27 10:53 — Session `df04d397-bca7-4eeb-96dd-1fb82fea696e`
+
+### What was done
+
+- **UI/UX planning** — Full product architecture session: planned page structure (`/dashboard`, `/dashboard/workflows/new`, `/dashboard/workflows/[id]`, `/dashboard/settings`), sidebar layout (2 nav items, collapsible icon mode), empty state → wizard → detail page flow; scoped current branch to just the post-login landing shell
+- **shadcn components installed** — sidebar, breadcrumb, dropdown-menu, avatar, tooltip, badge, skeleton, sonner, sheet; also `@hugeicons/core-free-icons` (required by Nova style components)
+- **Dashboard layout** — Created `frontend/app/dashboard/layout.tsx`: sidebar shell with `SidebarProvider`, auth guard moved here (protects all `/dashboard/*` automatically), top header bar with `SidebarTrigger` + breadcrumb
+- **Sidebar components** — `app-sidebar.tsx` (Oparax logo, nav, user footer), `nav-main.tsx` (flat nav with `usePathname` active state), `nav-user.tsx` (avatar initials + sign-out dropdown)
+- **Dashboard home page** — Rewrote `dashboard/page.tsx`: empty state (icon + "Create Workflow" CTA) or workflow card list with status badge + metadata
+- **Workflow card** — `workflow-card.tsx` with frequency labels, handle count, `timeAgo` relative time
+- **Settings page** — `dashboard/settings/page.tsx`: sign out + "Coming soon" for X OAuth and Voice Profile
+- **Root layout** — Added `TooltipProvider` (sidebar dependency) and `Toaster` (sonner) to `app/layout.tsx`
+- **Supabase migration** — `public.workflows` table: user_id FK, frequency, handles array, status, RLS policy
+- **Turbopack fix** — Removed root `package.json` / `package-lock.json` (stale npm artifacts causing Turbopack to infer wrong workspace root → `tailwindcss` resolution failure in dev mode)
+- **GitHub issues + branches** — Created #10–#14 covering the full product roadmap; local branches `ft/10-*` through `ft/14-*`
+
+### What's remaining
+
+- **Workflow Creation Wizard** — 4-step form at `/dashboard/workflows/new` (issue #10, branch `ft/10-workflow-creation-wizard`)

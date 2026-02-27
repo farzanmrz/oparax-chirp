@@ -33,7 +33,7 @@ Oparax is an AI-powered social media automation tool for professional news repor
 oparax-chirp/
 ├── frontend/                      # Next.js web application
 │   ├── app/                       # App Router — file-based routing
-│   │   ├── layout.tsx             # Root layout (Nunito Sans font, <html>)
+│   │   ├── layout.tsx             # Root layout (Nunito Sans, TooltipProvider, Toaster)
 │   │   ├── globals.css            # Tailwind v4 theme (gray oklch palette)
 │   │   ├── page.tsx               # Root "/" — redirects to /login
 │   │   ├── login/                 # Login route
@@ -44,17 +44,21 @@ oparax-chirp/
 │   │   │   ├── actions.ts         # Signup server action
 │   │   │   └── check-email/page.tsx  # Post-signup confirmation
 │   │   ├── auth/confirm/route.ts  # Email verification handler
-│   │   └── dashboard/page.tsx     # Protected page (redirects if not logged in)
+│   │   └── dashboard/             # Protected section (auth guard in layout)
+│   │       ├── layout.tsx         # Sidebar shell + auth guard (protects all /dashboard/*)
+│   │       ├── page.tsx           # Workflow list or empty state
+│   │       └── settings/page.tsx  # Account settings (sign out, coming-soon placeholders)
 │   ├── components/                # UI components
+│   │   ├── app-sidebar.tsx        # Main sidebar (logo, nav, user footer)
+│   │   ├── nav-main.tsx           # Flat nav with active state via usePathname
+│   │   ├── nav-user.tsx           # User dropdown (avatar initials + sign-out)
+│   │   ├── workflow-card.tsx      # Workflow card for dashboard list
 │   │   ├── login-form.tsx         # Login form (shadcn login-04 block)
 │   │   ├── signup-form.tsx        # Signup form (shadcn signup-04 block)
 │   │   └── ui/                    # shadcn base components
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── field.tsx
-│   │       ├── input.tsx
-│   │       ├── label.tsx
-│   │       └── separator.tsx
+│   │       ├── button.tsx, card.tsx, field.tsx, input.tsx, label.tsx, separator.tsx
+│   │       └── sidebar.tsx, avatar.tsx, badge.tsx, breadcrumb.tsx, dropdown-menu.tsx
+│   │           sheet.tsx, skeleton.tsx, sonner.tsx, tooltip.tsx
 │   ├── lib/                       # Shared utilities
 │   │   ├── supabase/client.ts     # Browser Supabase client
 │   │   ├── supabase/server.ts     # Server Supabase client
@@ -79,6 +83,7 @@ oparax-chirp/
 ├── NOTES.md                       # Brain dump — low-priority bugs & feature ideas
 ├── pyproject.toml                 # Python config
 └── .env                           # API credentials (git-ignored)
+# Note: root package.json / package-lock.json removed — they caused Turbopack dev-mode errors
 ```
 
 ## Reference Documentation
