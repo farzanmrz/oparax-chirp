@@ -152,3 +152,26 @@
 ### What's remaining
 
 - **Workflow Creation Wizard** — 4-step form at `/dashboard/workflows/new` (issue #10, branch `ft/10-workflow-creation-wizard`)
+
+## 2026-02-27 15:16 — Session `0492338f-b53e-4e93-b248-2895467f65d6`
+
+### What was done
+
+- **Branch sync** — Merged `main` into `ft/10-workflow-creation-wizard` (fast-forward); branch had been created before `ft/3` merged, so was missing the full dashboard shell
+- **shadcn components** — Installed `select` and `textarea` via shadcn CLI
+- **Workflow creation form** — Built `/dashboard/workflows/new` as a single-page progressive form replacing the original 4-step wizard: name (optional, auto-generated from description if blank), description, scan frequency (Select), X handles
+- **Comma/space/Enter chip input** — Custom `handle-input.tsx`: typing a comma or space instantly converts the text into a `@handle` chip; Backspace on empty removes last chip; duplicate + validation guards
+- **Test run (mocked)** — "Run Test" button inside the form card runs a faked 3-phase scan (scanning → analyzing → generating) and reveals 5 unique mock football headlines
+- **Headline selection phase** — Selectable headline cards appear after test; user picks which stories to proceed with; "Continue with N headlines" button advances to drafting rules
+- **Drafting rules phase** — Style conventions textarea + example tweet textarea appear after headline selection; saved as `style_rules` / `example_tweet` on the workflow row
+- **Supabase migration** — Added `style_rules` (text, nullable) and `example_tweet` (text, nullable) columns to `public.workflows`
+- **Visual hierarchy fix** — Rewrote all form labels/hints using a custom `FormField` wrapper: page title `text-2xl font-bold`, section headers `text-base font-semibold`, field labels `text-sm font-semibold`, hints `text-xs text-muted-foreground/70` — eliminates the "everything is the same white" bleed
+- **Sidebar active state fix** — `nav-main.tsx` now highlights "Workflows" for all `/dashboard/workflows/*` routes
+- **Reusable stepper** — `stepper.tsx` built as a generic horizontal step indicator (not used by this page but available for future flows)
+- **Tests** — 11 workflow action tests (48 total passing); covers success, auth redirect, validation, name generation, style_rules/example_tweet null handling
+- **NOTES.md** — Added two low-priority items: workflow detail 404 and dashboard table view
+
+### What's remaining
+
+- **Workflow detail page (issue #11)** — `/dashboard/workflows/[id]` currently 404s; needs a detail view showing config, run history, and draft review
+- **Merge `ft/10` into `main`** — Branch is committed locally; push blocked by network issue this session (run `git push --set-upstream origin ft/10-workflow-creation-wizard` then merge)
