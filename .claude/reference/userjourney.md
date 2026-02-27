@@ -29,11 +29,31 @@
 
 ### What was done
 
-- **Vercel deployment** — Diagnosed why Vercel showed "Other" (root `package.json` has no `next` dep; Next.js lives in `frontend/`); fixed by setting Root Directory to `frontend`; deployed successfully
-- **oparax.com domain** — Configured live custom domain on Vercel; explained DNS concepts (A record, CNAME, nameservers, Option A vs B); updated GoDaddy DNS (A `@` → `216.198.79.1`, CNAME `www` → `cname.vercel-dns.com`); site now live at oparax.com
-- **DNS education** — Explained what DNS is, what nameservers are, why two records are needed, 301 vs 307 redirects, and why Option A (individual records) is preferred over handing DNS to Vercel
-- **shadcn UI plan approved** — Chose theme: Nova style, Gray base, Hugeicons icons, Nunito Sans font, small radius; chose `login-04` and `signup-04` blocks; planned auth route restructure (separate `/login` and `/signup` pages replacing tab-based single page); plan saved and approved
+- **Vercel deployment** — Diagnosed why Vercel showed "Other"
+  (root `package.json` has no `next` dep; Next.js lives in
+  `frontend/`); fixed by setting Root Directory to `frontend`;
+  deployed successfully
+- **oparax.com domain** — Configured live custom domain on
+  Vercel; updated GoDaddy DNS (A `@` → Vercel IP, CNAME
+  `www` → `cname.vercel-dns.com`); site live at oparax.com
+- **DNS education** — Explained DNS, nameservers, A vs CNAME
+  records, Option A vs B, 301 vs 307 redirects
+- **shadcn UI rebuild** — Re-initialized shadcn with Nova
+  style, gray oklch palette, Hugeicons, small radius; swapped
+  font from Geist to Nunito Sans; installed `login-04` and
+  `signup-04` blocks; created separate `/login` and `/signup`
+  routes (replacing tab-based `(auth)/` single page); wired
+  server actions with error display via searchParams; added
+  confirm password validation (`validateSignupForm`); replaced
+  Meta social icon with X.com/Twitter; deleted old `(auth)/`
+  route group and stale root `package.json`; build passes
+- **Documentation update** — Updated CLAUDE.md (project layout
+  tree, tech stack, known issues, deployment status),
+  project-info.md (Vercel now live), vision.md (build status),
+  README.md (full rewrite with current structure and versions)
 
 ### What's remaining
 
-- **shadcn UI rebuild** — Execute approved plan: run `shadcn init` with new theme, add `login-04` / `signup-04` blocks, restructure auth routes, wire server actions, swap font/icons, clean up old files
+- **Agentic workflow UI** — Continue work on the
+  `ft/3-agentic-workflow-ui` branch: build out the
+  agentic workflow interface with shadcn components

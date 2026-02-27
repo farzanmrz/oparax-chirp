@@ -14,7 +14,8 @@ Oparax is an AI-powered social media automation tool for professional news repor
 | UI | React (`react`) | 19.2.3 | Component-based UI rendering |
 | Language | TypeScript (`typescript`) | 5.9.3 | Static type-checking for JavaScript |
 | Styling | Tailwind CSS (`tailwindcss`) | 4.2.0 | Utility-first CSS framework |
-| Components | shadcn/ui (`shadcn`) | 3.8.5 | Pre-built, customizable UI components (copied into codebase) |
+| Components | shadcn/ui (`shadcn`) | 3.8.5 | Pre-built, customizable UI components (copied into codebase, Nova style) |
+| Icons | Hugeicons (`@hugeicons/react`) | 1.1.5 | Icon library for shadcn components |
 | BaaS | Supabase (`@supabase/supabase-js`) | 2.97.0 | Supabase client — auth, database queries, storage |
 | BaaS | Supabase SSR (`@supabase/ssr`) | 0.8.0 | Server-side auth helpers — cookie/session management for Next.js |
 | Testing | Vitest (`vitest`) | 4.0.18 | Unit/integration test runner (Vite-native) |
@@ -26,8 +27,7 @@ Oparax is an AI-powered social media automation tool for professional news repor
 
 - **JS Package Manager**: `pnpm` — run `pnpm install` in `frontend/` for dependencies
 - **Python Package Manager**: `uv` — run `uv sync` at root for Python dependencies
-- **Deployment**: Vercel (frontend), TBD (backend)
-
+- **Deployment**: Vercel at [oparax.com](https://oparax.com) (frontend), TBD (backend)
 
 ## Project Layout
 
@@ -35,25 +35,38 @@ Oparax is an AI-powered social media automation tool for professional news repor
 oparax-chirp/
 ├── frontend/                      # Next.js web application
 │   ├── app/                       # App Router — file-based routing
-│   │   ├── layout.tsx             # Root layout (fonts, <html>)
-│   │   ├── globals.css            # Tailwind v4 theme + all colors
-│   │   ├── (auth)/                # Route group — no URL impact
-│   │   │   ├── layout.tsx         # Auth layout (centered card)
-│   │   │   ├── page.tsx           # Auth page at "/" (tabbed signin/signup)
-│   │   │   ├── login/actions.ts   # Login server action
-│   │   │   └── signup/            # Signup action + check-email page
+│   │   ├── layout.tsx             # Root layout (Nunito Sans font, <html>)
+│   │   ├── globals.css            # Tailwind v4 theme (gray oklch palette)
+│   │   ├── page.tsx               # Root "/" — redirects to /login
+│   │   ├── login/                 # Login route
+│   │   │   ├── page.tsx           # Login page (renders LoginForm)
+│   │   │   └── actions.ts         # Login server action
+│   │   ├── signup/                # Signup route
+│   │   │   ├── page.tsx           # Signup page (renders SignupForm)
+│   │   │   ├── actions.ts         # Signup server action
+│   │   │   └── check-email/page.tsx  # Post-signup confirmation
 │   │   ├── auth/confirm/route.ts  # Email verification handler
 │   │   └── dashboard/page.tsx     # Protected page (redirects if not logged in)
+│   ├── components/                # UI components
+│   │   ├── login-form.tsx         # Login form (shadcn login-04 block)
+│   │   ├── signup-form.tsx        # Signup form (shadcn signup-04 block)
+│   │   └── ui/                    # shadcn base components
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── field.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       └── separator.tsx
 │   ├── lib/                       # Shared utilities
 │   │   ├── supabase/client.ts     # Browser Supabase client
 │   │   ├── supabase/server.ts     # Server Supabase client
 │   │   ├── supabase/middleware.ts  # Session refresh (called by proxy.ts)
-│   │   ├── validation.ts          # validateAuthForm()
+│   │   ├── validation.ts          # validateAuthForm(), validateSignupForm()
 │   │   ├── auth-errors.ts         # mapAuthError()
 │   │   └── utils.ts               # cn() helper for class merging
 │   ├── __tests__/auth/            # Vitest tests (auth suite)
 │   ├── proxy.ts                   # Runs on EVERY request — refreshes auth
-│   ├── components.json            # shadcn/ui config (no components added yet)
+│   ├── components.json            # shadcn/ui config (Nova style, gray, hugeicons)
 │   ├── next.config.ts             # Next.js config
 │   ├── vitest.config.ts           # Test runner config
 │   └── package.json               # Dependencies and scripts
@@ -105,9 +118,17 @@ oparax-chirp/
 
 ### Known Issues / TODOs
 
-- **Duplicate email signup**: Supabase silently succeeds (anti-enumeration) — shows "check email" but no email sent. Need client-side check.
-- **Email confirmation template**: Must point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-- **Proxy route protection**: Currently page-level only (`dashboard/page.tsx`). Should add proxy-level redirect for protected routes.
+- **Duplicate email signup**: Supabase silently succeeds
+  (anti-enumeration) — shows "check email" but no email sent.
+  Need client-side check.
+- **Email confirmation template**: Must point to
+  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+- **Supabase redirect URLs**: `oparax.com` must be added to
+  Supabase → Authentication → URL Configuration → Redirect URLs
+- **Proxy route protection**: Currently page-level only
+  (`dashboard/page.tsx`). Should add proxy-level redirect.
+- **Social login buttons**: Apple, Google, X buttons render
+  but are non-functional (visual only for now)
 
 ## Conventions
 
