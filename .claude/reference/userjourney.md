@@ -121,6 +121,12 @@
   empty-identities duplicate detection; removed dead `auth-page.test.tsx`
   (tested a combined auth page component that no longer exists); all
   37 tests passing
+- **Session skills restructure** — Renamed `session-log` →
+  `update-user-journey`; created `update-notes` skill for NOTES.md
+  management; created `wrap-up` orchestrator (manual, 4-phase: git commit,
+  userjourney, NOTES.md, conditional CLAUDE.md/README.md); updated
+  `update-claude-md` to fix stale reference table and add README.md scope;
+  updated CLAUDE.md Session Workflow section; trimmed CLAUDE.md to 150 lines
 
 ### What's remaining
 
