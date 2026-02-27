@@ -51,9 +51,21 @@
   tree, tech stack, known issues, deployment status),
   project-info.md (Vercel now live), vision.md (build status),
   README.md (full rewrite with current structure and versions)
+- **Bug fixes** — Fixed Supabase rate-limit error matching
+  (regex instead of exact string since countdown varies);
+  fixed button hover states (`[a]:hover` Nova bug — buttons
+  had no hover; added `hover:bg-primary/90`, `active`,
+  `cursor-pointer`); confirmed by reading Supabase auth logs
+- **Landing bird image** — Moved `landing_bird.png` to
+  `frontend/public/images/`; replaced placeholder.svg on
+  both login and signup image panels
+- **Supabase redirect URLs** — Configured `oparax.com` in
+  Supabase → Authentication → URL Configuration →
+  Redirect URLs; also updated Site URL
+- **NOTES.md** — User created brain dump file for low-priority
+  bugs and feature ideas; added reference to CLAUDE.md
 
 ### What's remaining
 
-- **Agentic workflow UI** — Continue work on the
-  `ft/3-agentic-workflow-ui` branch: build out the
-  agentic workflow interface with shadcn components
+- **Button feedback** — Buttons still lack sufficient visual
+  feedback on click/hover per user notes; revisit styling

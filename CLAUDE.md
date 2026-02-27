@@ -78,6 +78,7 @@ oparax-chirp/
 │       ├── project-info.md        # Accounts, env vars, commands, setup
 │       └── userjourney.md         # Session log — what was done, what's next
 ├── CLAUDE.md                      # This file
+├── NOTES.md                       # Brain dump — low-priority bugs & feature ideas
 ├── pyproject.toml                 # Python config
 └── .env                           # API credentials (git-ignored)
 ```
@@ -89,6 +90,7 @@ oparax-chirp/
 | `.claude/reference/vision.md` | Product vision, core loop, long-term direction |
 | `.claude/reference/project-info.md` | Accounts, env vars, API setup, dev commands |
 | `.claude/reference/userjourney.md` | Start of session (context), end of session (update) |
+| `NOTES.md` | Low-priority bugs and feature ideas noticed by the user (brain dump, not urgent) |
 
 ## Rules
 
@@ -123,8 +125,6 @@ oparax-chirp/
   Need client-side check.
 - **Email confirmation template**: Must point to
   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-- **Supabase redirect URLs**: `oparax.com` must be added to
-  Supabase → Authentication → URL Configuration → Redirect URLs
 - **Proxy route protection**: Currently page-level only
   (`dashboard/page.tsx`). Should add proxy-level redirect.
 - **Social login buttons**: Apple, Google, X buttons render
