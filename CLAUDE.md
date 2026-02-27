@@ -90,36 +90,6 @@ oparax-chirp/
 | `.claude/reference/userjourney.md` | Start of session (context), end of session (update) |
 | `NOTES.md` | Low-priority bugs and feature ideas noticed by the user (brain dump, not urgent) |
 
-## Rules
-
-### Do's
-- Use `getUser()` on the server (revalidates JWT with Supabase)
-- Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` everywhere
-- Use `getAll`/`setAll` batch cookie methods in Supabase SSR
-- Use `@/` import alias (never relative paths)
-- Use semantic color tokens (`bg-primary`, `text-muted-foreground`)
-- Use `"use client"` only when interactivity is needed
-- Add `cleanup()` in `afterEach` for component tests
-
-### Don'ts
-
-- Never commit `.env` or `.env.local`
-- Never use `getSession()` on the server — doesn't revalidate JWT
-- Never use `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- Never import from `@supabase/auth-helpers-nextjs` (deprecated)
-- Never run code between `createServerClient()` and `getUser()` in proxy
-- Never use individual cookie methods (`get`, `set`, `remove`) — use batch
-- Never create `tailwind.config.ts` — v4 uses CSS-first config in `globals.css`
-- Never use `@tailwind` directives — use `@import "tailwindcss"`
-- Never use `darkMode: 'class'` — v4 uses `prefers-color-scheme` media query
-- Never use raw color values (`bg-red-500`) — use semantic tokens
-- Never use opacity modifiers on foreground (`text-foreground/60`)
-
-### Known Issues / TODOs
-
-- **Email confirmation template**: Must point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-- **Proxy route protection**: Currently page-level only (`dashboard/page.tsx`). Should add proxy-level redirect.
-- **Social login buttons**: Apple, Google, X buttons render but are non-functional (visual only)
 
 ## Conventions
 
