@@ -24,3 +24,16 @@
 - **Vercel deployment** — Import `farzanmrz/oparax-chirp` (Import flow,
   not Create new), set root dir to `frontend`, add Supabase env vars,
   add Vercel URL to Supabase redirect URLs
+
+## 2026-02-26 16:35 — Session `444581b9-b43c-4dd6-b8c6-30f72f24a1cf`
+
+### What was done
+
+- **Vercel deployment** — Diagnosed why Vercel showed "Other" (root `package.json` has no `next` dep; Next.js lives in `frontend/`); fixed by setting Root Directory to `frontend`; deployed successfully
+- **oparax.com domain** — Configured live custom domain on Vercel; explained DNS concepts (A record, CNAME, nameservers, Option A vs B); updated GoDaddy DNS (A `@` → `216.198.79.1`, CNAME `www` → `cname.vercel-dns.com`); site now live at oparax.com
+- **DNS education** — Explained what DNS is, what nameservers are, why two records are needed, 301 vs 307 redirects, and why Option A (individual records) is preferred over handing DNS to Vercel
+- **shadcn UI plan approved** — Chose theme: Nova style, Gray base, Hugeicons icons, Nunito Sans font, small radius; chose `login-04` and `signup-04` blocks; planned auth route restructure (separate `/login` and `/signup` pages replacing tab-based single page); plan saved and approved
+
+### What's remaining
+
+- **shadcn UI rebuild** — Execute approved plan: run `shadcn init` with new theme, add `login-04` / `signup-04` blocks, restructure auth routes, wire server actions, swap font/icons, clean up old files
