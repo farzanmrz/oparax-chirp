@@ -69,3 +69,31 @@
 
 - **Button feedback** — Buttons still lack sufficient visual
   feedback on click/hover per user notes; revisit styling
+
+## 2026-02-26 23:45 — Session `444581b9-b43c-4dd6-b8c6-30f72f24a1cf`
+
+### What was done
+
+- **Vercel build warnings** — Fixed `"Ignored build scripts"`
+  warning by adding `pnpm.onlyBuiltDependencies` for esbuild
+  and msw; fixed `"outputFileTracingRoot and turbopack.root"`
+  conflict by removing now-unnecessary `turbopack.root` from
+  `next.config.ts` (root `package-lock.json` that caused it
+  is gone); both warnings resolved on Vercel
+- **Button UX** — Added `active:` press states to outline,
+  ghost, secondary, and destructive variants; created
+  `SubmitButton` client component using `useFormStatus()` to
+  show spinner and disable on submit (forms stay as server
+  components); wired into login and signup forms — eliminates
+  double-click errors and missing loading feedback
+- **lib/ file recovery** — Core files (`lib/supabase/`,
+  `lib/validation.ts`, `lib/auth-errors.ts`, `lib/utils.ts`,
+  `app/auth/confirm/`) were accidentally deleted locally;
+  restored with `git restore`; build confirmed passing
+- **NOTES.md cleanup** — Removed resolved Frontend UI section
+  (button feedback, double-click, loading state all fixed)
+
+### What's remaining
+
+- **Agentic workflow UI** — Build the core product feature:
+  agentic workflow interface on the dashboard
