@@ -10,7 +10,17 @@
 - **Consolidated 6 reference files into CLAUDE.md** — Deleted `environment.md`, `frontend-nextjs.md`, `project-layout.md`, `supabase-auth.md`, `testing.md`, `vercel-deploy.md`. Moved critical rules to Do's/Don'ts, conventions inline, project layout as nested tree
 - **userjourney.md** — Created this session log
 - **session-log skill** — Created `.claude/skills/session-log/SKILL.md`: logs session work to `userjourney.md`, tags entries with date/time/session ID, always asks user for what's remaining (never infers), auto git add/commit/push with user confirmation
+- **GitHub Issue #3 rewritten** — Replaced outdated description with phased
+  plan: Phase 1 ✅ DONE (docs, shadcn init, test migration, README, skills),
+  Phase 2 (Vercel + explore templates/shadcn), Phase 3 (build UI),
+  Phase 4 (wire up auth + backend); long-term workflow scope preserved
+- **Tech stack discussion** — Educational session: React/Next.js/Vercel
+  relationship, TypeScript value, Tailwind v4 vs v3, Supabase as PostgreSQL
+  wrapper, Vitest vs Vite, React Router irrelevance, shadcn CLI workflow,
+  Vercel template mechanics (creates separate repo, not a branch)
 
 ### What's remaining
 
-- **Vercel deployment** — Import the existing `farzanmrz/oparax-chirp` repo correctly (Import flow, not Create new) and configure root directory, env vars, Supabase redirect URLs
+- **Vercel deployment** — Import `farzanmrz/oparax-chirp` (Import flow,
+  not Create new), set root dir to `frontend`, add Supabase env vars,
+  add Vercel URL to Supabase redirect URLs
