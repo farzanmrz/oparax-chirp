@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { signup } from "@/app/(auth)/signup/actions";
+import { signup } from "@/app/signup/actions";
 
 // Mock next/navigation
 const mockRedirect = vi.fn();
@@ -20,10 +20,11 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-function createFormData(email: string, password: string): FormData {
+function createFormData(email: string, password: string, confirmPassword?: string): FormData {
   const formData = new FormData();
   formData.set("email", email);
   formData.set("password", password);
+  formData.set("confirm-password", confirmPassword ?? password);
   return formData;
 }
 
@@ -34,7 +35,7 @@ describe("signup action", () => {
 
   it("redirects to /signup/check-email on successful signup", async () => {
     mockSignUp.mockResolvedValue({
-      data: { user: { id: "123", email: "testuser@oparax.com" }, session: null },
+      data: { user: { id: "123", email: "testuser@oparax.com", identities: [{ id: "abc" }] }, session: null },
       error: null,
     });
 
@@ -62,7 +63,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      "/?tab=signup&error=Password%20must%20be%20at%20least%206%20characters."
+      "/signup?error=Password%20must%20be%20at%20least%206%20characters."
     );
   });
 
@@ -80,7 +81,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -98,7 +99,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -116,7 +117,7 @@ describe("signup action", () => {
 
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -140,6 +141,22 @@ describe("signup action", () => {
     );
   });
 
+  it("detects duplicate email via empty identities (Supabase anti-enumeration)", async () => {
+    mockSignUp.mockResolvedValue({
+      data: { user: { id: "fake-id", email: "existing@example.com", identities: [] }, session: null },
+      error: null,
+    });
+
+    const formData = createFormData("existing@example.com", "testPassword123");
+
+    await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mockRedirect).toHaveBeenCalledWith(
+      expect.stringContaining(
+        encodeURIComponent("An account with this email already exists. Please sign in instead.")
+      )
+    );
+  });
+
   // Validation edge cases — Supabase should NOT be called
 
   it("redirects with error when email is missing", async () => {
@@ -149,7 +166,7 @@ describe("signup action", () => {
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -160,7 +177,7 @@ describe("signup action", () => {
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -170,7 +187,7 @@ describe("signup action", () => {
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 
@@ -180,7 +197,7 @@ describe("signup action", () => {
     await expect(signup(formData)).rejects.toThrow("NEXT_REDIRECT");
     expect(mockSignUp).not.toHaveBeenCalled();
     expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("/?tab=signup&error=")
+      expect.stringContaining("/signup?error=")
     );
   });
 });

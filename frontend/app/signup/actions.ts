@@ -13,13 +13,19 @@ export async function signup(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email: validated.email,
     password: validated.password,
   });
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(mapAuthError(error.message))}`);
+  }
+
+  if (data.user?.identities?.length === 0) {
+    redirect(
+      `/signup?error=${encodeURIComponent("An account with this email already exists. Please sign in instead.")}`
+    );
   }
 
   redirect("/signup/check-email");
