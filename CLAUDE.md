@@ -1,7 +1,5 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Oparax is an AI-powered social media automation tool for professional news reporters. It monitors X (Twitter) for breaking stories and drafts posts in the user's voice. The primary use case is a football news reporter with 400k+ followers on X.
@@ -95,7 +93,6 @@ oparax-chirp/
 ## Rules
 
 ### Do's
-
 - Use `getUser()` on the server (revalidates JWT with Supabase)
 - Use `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` everywhere
 - Use `getAll`/`setAll` batch cookie methods in Supabase SSR
@@ -120,15 +117,9 @@ oparax-chirp/
 
 ### Known Issues / TODOs
 
-- **Duplicate email signup**: Supabase silently succeeds
-  (anti-enumeration) — shows "check email" but no email sent.
-  Need client-side check.
-- **Email confirmation template**: Must point to
-  `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
-- **Proxy route protection**: Currently page-level only
-  (`dashboard/page.tsx`). Should add proxy-level redirect.
-- **Social login buttons**: Apple, Google, X buttons render
-  but are non-functional (visual only for now)
+- **Email confirmation template**: Must point to `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email`
+- **Proxy route protection**: Currently page-level only (`dashboard/page.tsx`). Should add proxy-level redirect.
+- **Social login buttons**: Apple, Google, X buttons render but are non-functional (visual only)
 
 ## Conventions
 
@@ -156,4 +147,4 @@ oparax-chirp/
 ## Session Workflow
 
 - **Start of session**: Read `userjourney.md` to understand where things left off and what's remaining.
-- **End of session**: Update `userjourney.md` with a new dated entry — what was done this session and what's remaining next.
+- **End of session**: Run `/wrap-up` (git commit, userjourney.md, NOTES.md, conditional CLAUDE.md/README.md). Individual: `/update-user-journey`, `/update-notes`, `/update-claude-md`.

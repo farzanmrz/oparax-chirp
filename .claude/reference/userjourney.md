@@ -97,3 +97,32 @@
 
 - **Agentic workflow UI** — Build the core product feature:
   agentic workflow interface on the dashboard
+
+## 2026-02-27 03:49 — Session `59a96a69-8bd6-4fc5-971d-611c840e80f1`
+
+### What was done
+
+- **beta.oparax.com** — Set up staging subdomain on Vercel: added CNAME
+  record in GoDaddy (`beta` → project-specific Vercel DNS), assigned
+  domain to Preview environment / `ft/3-agentic-workflow-ui` branch in
+  Vercel; added `https://beta.oparax.com/**` to Supabase redirect URLs
+- **Domain redirects** — Pointed `oparax.info`, `oparax.net`, `oparax.org`
+  (and `www.*` variants) to `www.oparax.com` via 301 redirects in Vercel;
+  added DNS records in GoDaddy for each (Vercel-first workflow: add domain
+  in Vercel first to get recommended DNS values, then set in GoDaddy)
+- **Duplicate email signup fix** — Detected Supabase anti-enumeration fake
+  success (`data.user.identities === []`) in signup action; redirects back
+  to `/signup?error=...` with clear message and sign-in link instead of
+  silently landing on check-email page
+- **Test suite fixes** — Fixed stale `@/app/(auth)/...` import paths in
+  `login-actions.test.ts` and `signup-actions.test.ts`; fixed redirect
+  path assertions (`/?tab=signup` → `/signup?error=`); added
+  `confirm-password` to `createFormData` helper; added new test case for
+  empty-identities duplicate detection; removed dead `auth-page.test.tsx`
+  (tested a combined auth page component that no longer exists); all
+  37 tests passing
+
+### What's remaining
+
+- **Agentic workflow UI** — Build the core product feature:
+  agentic workflow interface on the dashboard
