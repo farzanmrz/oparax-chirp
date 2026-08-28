@@ -134,7 +134,12 @@ export async function requestDmAuthorization(handle: string): Promise<AuthorizeR
           consent_at: null,
         })
         .eq("id", existing.id);
-      if (updateError) throw updateError;
+      if (updateError) {
+        if (updateError.code === "23505") {
+          return { state: "error", error: "This account already has alerts on another feed." };
+        }
+        throw updateError;
+      }
     } else {
       const { error: insertError } = await admin.from("dm_connections").insert({
         agent_id: agent.id,

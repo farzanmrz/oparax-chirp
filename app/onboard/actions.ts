@@ -98,6 +98,23 @@ export async function startPilotOnboarding(rawHandle: string): Promise<StartPilo
     return { ok: false, error: "You've hit today's limit. Try again tomorrow." };
   }
 
+  const { count: completedTodayCount, error: completedTodayError } = await admin
+    .from("onboard_attempts")
+    .select("*", { count: "exact", head: true })
+    .eq("ip_hash", ipHash)
+    .eq("day", utcToday())
+    .eq("outcome", "completed");
+  if (completedTodayError) {
+    reportServerException(completedTodayError, {
+      tags: { scope: "onboard_completed_ip_check" },
+    });
+    return { ok: false, error: GENERIC_FAILURE_COPY };
+  }
+  if ((completedTodayCount ?? 0) > 0) {
+    captureServerEvent("onboard_rate_limited", { distinctId, properties: eventProps });
+    return { ok: false, error: "You've hit today's limit. Try again tomorrow." };
+  }
+
   // (e) Record the attempt before any billed work.
   const { data: startedRow, error: startedError } = await admin
     .from("onboard_attempts")
@@ -115,8 +132,9 @@ export async function startPilotOnboarding(rawHandle: string): Promise<StartPilo
   const recordFailure = async (reason: string) => {
     const { error } = await admin
       .from("onboard_attempts")
-      .insert({ handle, ip_hash: ipHash, outcome: "failed" });
-    if (error) console.error("startPilotOnboarding: failed-row insert failed", error);
+      .update({ outcome: "failed" })
+      .eq("id", startedRow.id);
+    if (error) console.error("startPilotOnboarding: failed-row update failed", error);
     captureServerEvent("onboard_failed", {
       distinctId,
       properties: { ...eventProps, reason },
@@ -174,9 +192,18 @@ export async function startPilotOnboarding(rawHandle: string): Promise<StartPilo
     .from("onboard_attempts")
     .update({ outcome: "completed" })
     .eq("id", startedRow.id);
-  if (completeError && completeError.code !== "23505") {
-    console.error("startPilotOnboarding: completed-row update failed", completeError);
-    reportServerException(completeError, { tags: { scope: "onboard_completed_row" } });
+  if (completeError) {
+    if (completeError.code !== "23505") {
+      console.error("startPilotOnboarding: completed-row update failed", completeError);
+    }
+    reportServerException(completeError, {
+      tags: {
+        scope:
+          completeError.code === "23505"
+            ? "onboard_completed_row_conflict"
+            : "onboard_completed_row",
+      },
+    });
   }
   captureServerEvent("onboard_completed", { distinctId, properties: eventProps });
   // X subscriptions for the new desk's tracked handles are picked up by the reconcile cron;

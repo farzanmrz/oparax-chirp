@@ -33,6 +33,7 @@ const LEDGER_STALE_MS = 900_000;
 const RESERVATION_STALE_MS = 15 * 60_000;
 /** "Zero post.create events across all subscriptions for an implausible interval." */
 const QUIET_REPLAY_WINDOW_MS = 2 * 60 * 60_000;
+const DRAFTING_DEADLINE_MARGIN_MS = 60_000;
 
 function isAuthorized(header: string | null, secret: string): boolean {
   if (!header) return false;
@@ -116,8 +117,10 @@ async function reconcileSubscriptions(admin: Admin): Promise<{
     byOwner.set(ownerId, [...(byOwner.get(ownerId) ?? []), handle]);
   }
   const desiredUserIds = new Set<string>();
+  let allResolutionsComplete = true;
   for (const [ownerId, handles] of byOwner) {
     const resolved = await resolveXUserIds(handles, ownerId);
+    if (!resolved.complete) allResolutionsComplete = false;
     for (const id of resolved.values()) desiredUserIds.add(id);
   }
 
@@ -142,15 +145,17 @@ async function reconcileSubscriptions(admin: Admin): Promise<{
     }
   }
   const botUserId = process.env.X_BOT_USER_ID ?? null;
-  for (const sub of postCreateSubs) {
-    if (sub.userId === null || desiredUserIds.has(sub.userId)) continue;
-    if (botUserId && sub.userId === botUserId) continue;
-    try {
-      await deleteSubscription(sub.id);
-      deleted++;
-    } catch (error) {
-      failures++;
-      console.error("x/reconcile: subscription delete failed", { id: sub.id, error });
+  if (allResolutionsComplete) {
+    for (const sub of postCreateSubs) {
+      if (sub.userId === null || desiredUserIds.has(sub.userId)) continue;
+      if (botUserId && sub.userId === botUserId) continue;
+      try {
+        await deleteSubscription(sub.id);
+        deleted++;
+      } catch (error) {
+        failures++;
+        console.error("x/reconcile: subscription delete failed", { id: sub.id, error });
+      }
     }
   }
   return {
@@ -164,7 +169,7 @@ async function reconcileSubscriptions(admin: Admin): Promise<{
 }
 
 /** Recovery sweep: pending/processing ledger rows older than the claim fence + margin. */
-async function sweepLedger(admin: Admin): Promise<number> {
+async function sweepLedger(admin: Admin, deadlineAt: number): Promise<number> {
   const cutoff = new Date(Date.now() - LEDGER_STALE_MS).toISOString();
   const { data: stale, error } = await admin
     .from("x_webhook_events")
@@ -176,9 +181,13 @@ async function sweepLedger(admin: Admin): Promise<number> {
   if (error) throw error;
   let reprocessed = 0;
   for (const row of stale ?? []) {
+    if (Date.now() >= deadlineAt) break;
     const claimed = await claimLedgerRow(admin, row.id, ["pending", "processing"]);
     if (!claimed) continue;
-    await processClaimedEvent(admin, row, { verifySettledOnAlreadyDrafted: true });
+    await processClaimedEvent(admin, row, {
+      deadlineAt,
+      verifySettledOnAlreadyDrafted: true,
+    });
     reprocessed++;
   }
   return reprocessed;
@@ -212,7 +221,7 @@ async function pollDmFallback(admin: Admin): Promise<void> {
   if (error || !pending?.length) return;
   try {
     const res = await fetch(
-      "https://api.x.com/2/dm_events?dm_event.fields=sender_id,text,event_type&max_results=50",
+      "https://api.x.com/2/dm_events?dm_event.fields=sender_id,text,event_type,created_at&max_results=50",
       {
         headers: { authorization: `Bearer ${botToken}` },
         signal: AbortSignal.timeout(20_000),
@@ -223,13 +232,17 @@ async function pollDmFallback(admin: Admin): Promise<void> {
       return;
     }
     const body = (await res.json()) as {
-      data?: { sender_id?: string; text?: string; event_type?: string }[];
+      data?: { sender_id?: string; text?: string; event_type?: string; created_at?: string }[];
     };
     const botUserId = process.env.X_BOT_USER_ID;
     for (const event of body.data ?? []) {
       if (!event.sender_id || typeof event.text !== "string") continue;
       if (botUserId && event.sender_id === botUserId) continue;
-      await handleInboundDm(admin, { senderXUserId: event.sender_id, text: event.text });
+      await handleInboundDm(
+        admin,
+        { senderXUserId: event.sender_id, text: event.text },
+        event.created_at,
+      );
     }
   } catch (error) {
     console.warn("x/reconcile: DM fallback poll failed", error);
@@ -266,6 +279,8 @@ async function maybeReplay(
 }
 
 export async function GET(req: Request) {
+  const requestStartedAt = Date.now();
+  const deadlineAt = requestStartedAt + (maxDuration * 1000 - DRAFTING_DEADLINE_MARGIN_MS);
   const secret = process.env.CRON_SECRET;
   if (!secret || !isAuthorized(req.headers.get("authorization"), secret)) {
     return new Response("Unauthorized", { status: 401 });
@@ -306,7 +321,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    summary.ledgerReprocessed = await sweepLedger(admin);
+    summary.ledgerReprocessed = await sweepLedger(admin, deadlineAt);
   } catch (error) {
     summary.ledgerReprocessed = "error";
     reportServerException(error, { tags: { area: "x_reconcile", stage: "ledger_sweep" } });

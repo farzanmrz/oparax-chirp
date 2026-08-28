@@ -22,12 +22,13 @@ function pilotDistinctId(publicHandle: string | null, connectionHandle: string):
 export async function handleInboundDm(
   admin: AdminClient,
   input: { senderXUserId: string; text: string },
+  eventCreatedAt?: string,
 ): Promise<DmIntakeOutcome> {
   const normalized = input.text.trim().toLowerCase();
 
   const { data: connection, error } = await admin
     .from("dm_connections")
-    .select("id, agent_id, handle, state, agents(public_handle, trial_started_at)")
+    .select("id, agent_id, handle, state, created_at, agents(public_handle, trial_started_at)")
     .eq("x_user_id", input.senderXUserId)
     .in("state", ["pending", "active", "trial_expired"])
     .order("created_at", { ascending: false })
@@ -38,6 +39,15 @@ export async function handleInboundDm(
     return "no_connection";
   }
   if (!connection) return "no_connection";
+  const eventCreatedAtMs = eventCreatedAt ? Date.parse(eventCreatedAt) : Number.NaN;
+  const connectionCreatedAtMs = Date.parse(connection.created_at);
+  if (
+    !Number.isNaN(eventCreatedAtMs) &&
+    !Number.isNaN(connectionCreatedAtMs) &&
+    eventCreatedAtMs < connectionCreatedAtMs
+  ) {
+    return "ignored";
+  }
 
   const agent = connection.agents as unknown as { public_handle: string | null } | null;
   const distinctId = pilotDistinctId(agent?.public_handle ?? null, connection.handle);

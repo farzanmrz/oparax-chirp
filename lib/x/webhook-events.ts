@@ -10,7 +10,11 @@ import "server-only";
 // never dropped silently, so QC and the owner see live evidence of whatever X actually sends.
 
 import { createHash } from "node:crypto";
-import { type IngestDelivery, processDelivery } from "@/lib/agent/draft-pipeline";
+import {
+  type IngestDelivery,
+  processDelivery,
+  RetryableDeliveryError,
+} from "@/lib/agent/draft-pipeline";
 import { reportServerException } from "@/lib/observability/posthog-server";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/database.types";
@@ -86,12 +90,105 @@ function dmSenderOf(raw: unknown): string | null {
 
 function boundedPayload(raw: unknown): Json {
   const serialized = JSON.stringify(raw ?? null);
-  if (Buffer.byteLength(serialized, "utf8") <= MAX_PAYLOAD_BYTES) {
+  const originalBytes = Buffer.byteLength(serialized, "utf8");
+  if (originalBytes <= MAX_PAYLOAD_BYTES) {
     return (raw ?? null) as Json;
   }
+
+  const trimmed = JSON.parse(serialized) as unknown;
+  const record = asRecord(trimmed);
+  const post = postOf(trimmed);
+  const rootIncludes = asRecord(record?.includes);
+  const dataIncludes = asRecord(asRecord(record?.data)?.includes);
+  const includesRecords = [rootIncludes, dataIncludes].filter(
+    (includes): includes is Record<string, unknown> => includes !== null,
+  );
+  const fits = () => Buffer.byteLength(JSON.stringify(trimmed), "utf8") <= MAX_PAYLOAD_BYTES;
+
+  for (const includes of includesRecords) {
+    delete includes.tweets;
+    delete includes.polls;
+  }
+  if (fits()) return trimmed as Json;
+
+  if (post) {
+    delete post.entities;
+    const extendedTweet = asRecord(post.extended_tweet);
+    if (extendedTweet) delete extendedTweet.entities;
+  }
+  if (fits()) return trimmed as Json;
+
+  if (post && Object.hasOwn(post, "retweeted_status")) {
+    post.retweeted_status = {};
+  }
+  if (fits()) return trimmed as Json;
+
+  const mediaKeys = new Set(
+    Array.isArray(asRecord(post?.attachments)?.media_keys)
+      ? (asRecord(post?.attachments)?.media_keys as unknown[]).filter(
+          (key): key is string => typeof key === "string",
+        )
+      : [],
+  );
+  for (const includes of includesRecords) {
+    if (!Array.isArray(includes.media)) continue;
+    includes.media = includes.media.flatMap((entry) => {
+      const media = asRecord(entry);
+      const mediaKey = str(media?.media_key);
+      if (!media || !mediaKey || !mediaKeys.has(mediaKey)) return [];
+      const narrowed: Record<string, unknown> = {};
+      for (const key of ["media_key", "type", "url", "preview_image_url"]) {
+        if (media[key] !== undefined) narrowed[key] = media[key];
+      }
+      return [narrowed];
+    });
+  }
+  if (fits()) return trimmed as Json;
+
+  const extendedEntities = asRecord(post?.extended_entities);
+  if (post && extendedEntities) {
+    const media = Array.isArray(extendedEntities.media) ? extendedEntities.media : [];
+    post.extended_entities = {
+      media: media.flatMap((entry) => {
+        const item = asRecord(entry);
+        if (!item) return [];
+        const narrowed: Record<string, unknown> = {};
+        for (const key of ["type", "media_url_https"]) {
+          if (item[key] !== undefined) narrowed[key] = item[key];
+        }
+        return [narrowed];
+      }),
+    };
+  }
+  if (fits()) return trimmed as Json;
+
+  const authorId = str(post?.author_id);
+  const postAuthor = asRecord(post?.author);
+  const legacyAuthor = asRecord(post?.user);
+  const authorHandle =
+    str(postAuthor?.username) ??
+    str(postAuthor?.screen_name) ??
+    str(legacyAuthor?.screen_name) ??
+    str(legacyAuthor?.username);
+  for (const includes of includesRecords) {
+    if (!Array.isArray(includes.users)) continue;
+    const users = includes.users;
+    includes.users = users.filter((entry) => {
+      const user = asRecord(entry);
+      if (!user) return false;
+      if (authorId && str(user.id) === authorId) return true;
+      const includedHandle = str(user.username) ?? str(user.screen_name);
+      if (authorHandle && includedHandle) {
+        return includedHandle.toLowerCase() === authorHandle.toLowerCase();
+      }
+      return !authorId && !authorHandle && users.length === 1;
+    });
+  }
+  if (fits()) return trimmed as Json;
+
   return {
     _truncated: true,
-    original_bytes: Buffer.byteLength(serialized, "utf8"),
+    original_bytes: originalBytes,
   } as unknown as Json;
 }
 
@@ -243,6 +340,10 @@ export type MappedWebhookEvent =
   | { kind: "unrecognized" };
 
 export function mapWebhookEvent(eventType: string, raw: unknown): MappedWebhookEvent {
+  if (asRecord(raw)?._truncated === true) {
+    return { kind: "excluded", reason: "payload_truncated" };
+  }
+
   const type = eventType.toLowerCase();
 
   if (type.includes("post") || type.includes("tweet")) {
@@ -400,6 +501,7 @@ export async function processClaimedEvent(
     }
     await setLedgerState(admin, row.id, "processed");
   } catch (error) {
+    if (error instanceof RetryableDeliveryError) return;
     reportServerException(error, {
       tags: { area: "x_webhook" },
       extra: { ledgerRowId: row.id, eventType: row.event_type },

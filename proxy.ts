@@ -33,8 +33,9 @@ export const config = {
      * - api/x (X webhooks/crons — machine callers, no session)
      * - api/stripe (Stripe webhooks — machine callers, no session)
      * - l (alert short links — a redirect hop that should stay fast)
+     * - feed (public feed pages need no session work)
      * - public image files (svg, png, jpg, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico|ingest|api/x|api/stripe|l/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|ingest|api/x|api/stripe|l/|feed/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -29,10 +29,10 @@ export function AuthorizeModule({
   const [pending, startTransition] = useTransition();
 
   const view: View =
-    connection === "active"
-      ? "connected"
-      : connection === "trial_expired" || trialEnded
-        ? "trial-ended"
+    connection === "trial_expired" || trialEnded
+      ? "trial-ended"
+      : connection === "active"
+        ? "connected"
         : connection === "pending"
           ? "waiting"
           : connection === "stopped"
@@ -40,7 +40,7 @@ export function AuthorizeModule({
             : "idle";
 
   function authorize() {
-    posthog.capture("authorize_pressed");
+    posthog.capture("authorize_pressed", { pilot_handle: handle });
     setErrorText(null);
     startTransition(async () => {
       const result = await requestDmAuthorization(handle);

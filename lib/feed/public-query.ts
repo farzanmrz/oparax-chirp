@@ -150,7 +150,47 @@ export async function fetchPublicFeed(
   if (trialResult.error) throw trialResult.error;
 
   const assignments = assignmentsResult.data ?? [];
-  const sourcePostIds = [...new Set(assignments.map((row) => row.source_post_id))];
+  const countAssignments: { story_id: string; source_post_id: string; created_at: string }[] = [];
+  if (before === null) {
+    const countWindowStart = new Date(Date.now() - 24 * 3_600_000).toISOString();
+    const { data: countWinners, error: countWinnersError } = await admin
+      .from("drafts")
+      .select("story_id")
+      .eq("agent_id", agent.id)
+      .eq("is_winner", true)
+      .not("story_id", "is", null)
+      .gt("created_at", countWindowStart)
+      .order("created_at", { ascending: false })
+      .limit(FEED_STORY_CAP);
+    if (countWinnersError) throw countWinnersError;
+
+    const countStoryIds = [
+      ...new Set(
+        (countWinners ?? []).map((row) => row.story_id).filter((id): id is string => id !== null),
+      ),
+    ];
+    const assignmentPageSize = 1_000;
+    for (let i = 0; i < countStoryIds.length; i += 50) {
+      const storyIdPart = countStoryIds.slice(i, i + 50);
+      for (let from = 0; ; from += assignmentPageSize) {
+        const { data, error } = await admin
+          .from("story_assignments")
+          .select("id, story_id, source_post_id, created_at")
+          .eq("agent_id", agent.id)
+          .in("story_id", storyIdPart)
+          .order("id", { ascending: true })
+          .range(from, from + assignmentPageSize - 1);
+        if (error) throw error;
+        const page = data ?? [];
+        countAssignments.push(...page);
+        if (page.length < assignmentPageSize) break;
+      }
+    }
+  }
+
+  const sourcePostIds = [
+    ...new Set([...assignments, ...countAssignments].map((row) => row.source_post_id)),
+  ];
   const sourcePosts = new Map<
     string,
     {
@@ -186,12 +226,8 @@ export async function fetchPublicFeed(
     }
   }
 
-  const alertedStoryIds = new Set((alertsResult.data ?? []).map((row) => row.story_id));
-
-  const sourcesByStory = new Map<string, PublicFeedSource[]>();
-  for (const assignment of assignments) {
-    const post = sourcePosts.get(assignment.source_post_id);
-    if (!post) continue;
+  const displaySources = new Map<string, PublicFeedSource>();
+  for (const post of sourcePosts.values()) {
     const isX = post.source === "x";
     const source: PublicFeedSource = {
       kind: isX ? "x" : "website",
@@ -208,6 +244,15 @@ export async function fetchPublicFeed(
           : post.url,
       postedAt: post.posted_at,
     };
+    displaySources.set(post.id, source);
+  }
+
+  const alertedStoryIds = new Set((alertsResult.data ?? []).map((row) => row.story_id));
+
+  const sourcesByStory = new Map<string, PublicFeedSource[]>();
+  for (const assignment of assignments) {
+    const source = displaySources.get(assignment.source_post_id);
+    if (!source) continue;
     sourcesByStory.set(assignment.story_id, [
       ...(sourcesByStory.get(assignment.story_id) ?? []),
       source,
@@ -228,17 +273,17 @@ export async function fetchPublicFeed(
     ];
   });
 
-  // Per-source counts over the last 24 hours, computed from the fetched window.
-  const dayStart = Date.now() - 24 * 3_600_000;
+  // Per-source counts over the full bounded 24-hour window, only needed on the first page.
   const counts = new Map<string, number>();
-  for (const story of stories) {
-    if (Date.parse(story.landedAt) < dayStart) continue;
-    const seen = new Set<string>();
-    for (const source of story.sources) {
-      if (seen.has(source.label)) continue;
-      seen.add(source.label);
-      counts.set(source.label, (counts.get(source.label) ?? 0) + 1);
-    }
+  const seenByStory = new Map<string, Set<string>>();
+  for (const assignment of countAssignments) {
+    const source = displaySources.get(assignment.source_post_id);
+    if (!source) continue;
+    const seen = seenByStory.get(assignment.story_id) ?? new Set<string>();
+    if (seen.has(source.label)) continue;
+    seen.add(source.label);
+    seenByStory.set(assignment.story_id, seen);
+    counts.set(source.label, (counts.get(source.label) ?? 0) + 1);
   }
 
   const connectionState: PublicFeedConnectionState =

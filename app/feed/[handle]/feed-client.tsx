@@ -105,18 +105,25 @@ export function FeedClient({ initial }: { initial: PublicFeedData }) {
     if (searchTimer.current !== null) window.clearTimeout(searchTimer.current);
     searchTimer.current = window.setTimeout(() => {
       // Only the LENGTH ever leaves the page, never the query text.
-      posthog.capture("feed_searched", { query_length: value.trim().length });
+      posthog.capture("feed_searched", {
+        query_length: value.trim().length,
+        pilot_handle: handle,
+      });
     }, 400);
   }
 
   function onSourcePress(label: string) {
-    posthog.capture("feed_filtered", { kind: "source", value: label });
+    posthog.capture("feed_filtered", { kind: "source", value: label, pilot_handle: handle });
     setSoloSource((prev) => (prev === label ? null : label));
   }
 
   function onAlertsToggle(next: boolean) {
     if (next === alertsOnly) return;
-    posthog.capture("feed_filtered", { kind: "alerts", value: next ? "alerts" : "all" });
+    posthog.capture("feed_filtered", {
+      kind: "alerts",
+      value: next ? "alerts" : "all",
+      pilot_handle: handle,
+    });
     setAlertsOnly(next);
   }
 

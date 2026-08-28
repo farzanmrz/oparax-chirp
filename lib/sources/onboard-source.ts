@@ -493,6 +493,8 @@ async function resolveBeatSection(
   admin: ReturnType<typeof createAdminClient>,
   ownerId: string,
   agentId: string,
+  attributionDistinctId: string,
+  pilotHandle: string | null,
   traceId: string,
   configId: string,
   typedUrl: URL,
@@ -789,7 +791,7 @@ async function resolveBeatSection(
                 ]
               : null;
         captureAiGeneration({
-          distinctId: ownerId,
+          distinctId: attributionDistinctId,
           traceId,
           spanId: `${inserted.id}:${index}`,
           stage: "source_narrowing",
@@ -800,7 +802,11 @@ async function resolveBeatSection(
           generationId: resolvedSteps[index]?.generationId ?? null,
           inputMessages,
           outputText: `tool ${toolCallNames.join(", ") || "none"}: results ${toolResultNames.join(", ") || "none"}; finish ${step.finishReason}`,
-          properties: { agent_id: agentId, tool_call_names: toolCallNames },
+          properties: {
+            agent_id: agentId,
+            tool_call_names: toolCallNames,
+            ...(pilotHandle ? { pilot_handle: pilotHandle } : {}),
+          },
         });
       });
     } catch (ledgerError) {
@@ -935,6 +941,13 @@ export async function onboardSource(
 ): Promise<OnboardOutcome> {
   const admin = createAdminClient();
   const traceId = randomUUID();
+  const { data: desk } = await admin
+    .from("agents")
+    .select("public_handle")
+    .eq("id", agentId)
+    .maybeSingle();
+  const pilotHandle = desk?.public_handle ?? null;
+  const attributionDistinctId = pilotHandle ? `x:${pilotHandle}` : ownerId;
   if (!(await checkOriginReachable(inputUrl))) {
     await failOnboarding(admin, mode, agentId, configId, "unreachable");
     return { status: "unreachable" };
@@ -981,6 +994,8 @@ export async function onboardSource(
       admin,
       ownerId,
       agentId,
+      attributionDistinctId,
+      pilotHandle,
       traceId,
       configId,
       inputUrl,
@@ -1066,7 +1081,7 @@ export async function onboardSource(
     });
     modelCallId = inserted.id;
     captureAiGeneration({
-      distinctId: ownerId,
+      distinctId: attributionDistinctId,
       traceId,
       spanId: inserted.id,
       stage: "source_onboarding",
@@ -1077,7 +1092,10 @@ export async function onboardSource(
       generationId: inserted.generationId,
       inputMessages,
       outputText: output,
-      properties: { agent_id: agentId },
+      properties: {
+        agent_id: agentId,
+        ...(pilotHandle ? { pilot_handle: pilotHandle } : {}),
+      },
     });
     verdict = result.object;
   } catch (err) {
@@ -1095,7 +1113,7 @@ export async function onboardSource(
         providerMetadata: stepRef.value?.providerMetadata,
       });
       captureAiGeneration({
-        distinctId: ownerId,
+        distinctId: attributionDistinctId,
         traceId,
         spanId: failedCall.id,
         stage: "source_onboarding",
@@ -1106,7 +1124,10 @@ export async function onboardSource(
         generationId: failedCall.generationId,
         inputMessages,
         outputText: output,
-        properties: { agent_id: agentId },
+        properties: {
+          agent_id: agentId,
+          ...(pilotHandle ? { pilot_handle: pilotHandle } : {}),
+        },
       });
       await failOnboarding(
         admin,
