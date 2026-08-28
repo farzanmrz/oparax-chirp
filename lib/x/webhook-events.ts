@@ -105,11 +105,8 @@ function eventOf(eventType: string, raw: unknown): ExtractedEvent {
   const record = asRecord(raw);
   const xPostId = postIdOf(raw);
   const senderXUserId = dmSenderOf(raw);
-  const nativeId =
-    str(record?.event_id) ??
-    str(record?.id) ??
-    (eventType.startsWith("chat") ? (str(dmOf(raw)?.id) ?? null) : null) ??
-    xPostId;
+  const chatMessageId = eventType.startsWith("chat") ? str(dmOf(raw)?.id) : null;
+  const nativeId = str(record?.event_id) ?? str(record?.id) ?? chatMessageId ?? xPostId;
   return {
     eventId: `${eventType}:${nativeId ?? contentHash(raw)}`,
     eventType,
