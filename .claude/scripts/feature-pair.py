@@ -20,6 +20,9 @@ import uuid
 
 SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}},
           "required": ["answer"], "additionalProperties": False}
+MODELS = {'fable': 'claude-fable-5', 'sol': 'gpt-5.6-sol', 'astra': 'gpt-6-astra'}
+PHASES = {'scope': 'sol', 'plain': 'sol', 'detail': 'astra',
+          'adjudication': 'sol', 'redesign': 'astra'}
 RULES = """You are the independent peer in /feature, not its coordinator.
 Do only the assignment below. Do not invoke /feature or another workflow.
 Read repository source as needed, but do not change code, git, services or data.
@@ -106,7 +109,17 @@ def refresh(run, state):
 def report(state):
     # Deliberately no answer, raw log or sealed draft paths in progress output.
     print(json.dumps({k: state.get(k) for k in
-                      ('status', 'peer', 'turn', 'session_id', 'error', 'deadline')}))
+                      ('status', 'phase', 'peer', 'model', 'turn', 'session_id', 'error', 'deadline')}))
+
+
+def peer_for(host, phase):
+    codex_partner = PHASES[phase]
+    if host == 'fable':
+        return codex_partner
+    if host == codex_partner:
+        return 'fable'
+    raise ValueError(f'{phase} requires Fable and {codex_partner.title()}; '
+                     f'{host.title()} cannot author the host draft for this phase')
 
 
 def launch(run, state, prompt):
@@ -126,14 +139,14 @@ def launch(run, state, prompt):
 
 def command(run, state):
     session = state.get('session_id')
-    if state['peer'] == 'astra':
+    if state['peer'] in ('astra', 'sol'):
         cmd = ['codex', 'exec']
         if session:
             cmd += ['resume', session]
         else:
             cmd += ['-s', 'read-only', '-C', state['repo']]
         # Resume inherits the original read-only sandbox and working directory.
-        cmd += ['-m', 'gpt-6-astra', '-c', 'model_reasoning_effort="high"',
+        cmd += ['-m', MODELS[state['peer']], '-c', 'model_reasoning_effort="high"',
                 '--json', '--output-schema', str(run / 'schema.json'), '-']
         return cmd
     cmd = ['claude', '--print', '--model', 'claude-fable-5', '--effort', 'high',
@@ -147,7 +160,7 @@ def command(run, state):
 
 
 def parse_output(peer, raw):
-    if peer == 'astra':
+    if peer in ('astra', 'sol'):
         events = [json.loads(line) for line in raw.splitlines() if line.strip()]
         ids = [e['thread_id'] for e in events if e.get('type') == 'thread.started']
         answers = [e['item']['text'] for e in events
@@ -252,7 +265,9 @@ def main():
     start.add_argument('--repo', required=True)
     start.add_argument('--brief', required=True)
     start.add_argument('--host-draft', required=True)
-    start.add_argument('--host', choices=['fable', 'astra'], required=True)
+    start.add_argument('--host', choices=list(MODELS), required=True)
+    start.add_argument('--phase', choices=list(PHASES), required=True)
+    start.add_argument('--reason', help='Required for a substantial post-critique redesign')
     start.add_argument('--timeout', type=int, default=900)
     for name in ('status', 'exchange', 'cancel', '_run'):
         subs.add_parser(name).add_argument('run')
@@ -270,6 +285,9 @@ def main():
     if args.cmd == 'start':
         if not 1 <= args.timeout <= 900:
             raise ValueError('timeout must be between 1 and 900 seconds')
+        peer = peer_for(args.host, args.phase)
+        if args.phase == 'redesign' and not (args.reason or '').strip():
+            raise ValueError('redesign requires --reason explaining the substantial design change')
         brief, draft = read_text(args.brief), read_text(args.host_draft)
         repo = Path(args.repo).resolve()
         if not repo.is_dir():
@@ -278,8 +296,8 @@ def main():
         (run / 'brief.md').write_text(brief)
         (run / 'host-draft.md').write_text(draft)
         write_json(run / 'schema.json', SCHEMA)
-        state = dict(repo=str(repo), host=args.host,
-                     peer='astra' if args.host == 'fable' else 'fable',
+        state = dict(repo=str(repo), host=args.host, phase=args.phase,
+                     peer=peer, model=MODELS[peer], reason=args.reason,
                      session_id=None, turn=0, timeout=args.timeout,
                      sealed={'brief.md': digest(brief), 'host-draft.md': digest(draft)})
         with locked(run):

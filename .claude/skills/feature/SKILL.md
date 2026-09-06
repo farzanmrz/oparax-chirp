@@ -4,9 +4,9 @@ description: >-
   The whole plan side of feature work, same behavior in either host
   (it loads skill bundles with the Skill tool and runs the critique
   lanes with Bash): talk through the idea with the owner, write the
-  owner-facing plan with independent Fable and Astra input, load the slice's skill bundles and
+  owner-facing plan with Fable and Sol input, load the slice's skill bundles and
   check the plan against them, agree the plan with the owner, write the
-  detailed plan for build, run a four-lane holistic cross-model critique
+  detailed plan with independent Fable and Astra drafts, run a four-lane critique
   directly in this session plus adjudication, present the revised plan,
   and on approval create the GitHub issue and cut the branch. Use when
   the user says /feature, "let's plan a feature", or brings a new
@@ -22,9 +22,9 @@ disable-model-invocation: true
 
 One session, start to finish. Nothing here auto-dispatches the next stage of the overall flow: this skill ends by naming `$build <N>` for the owner to run themselves, in Codex or as `/build <N>` in Claude Code.
 
-## Fable and Astra participation
+## Fable, Sol and Astra participation
 
-Read [the pair-planning protocol](references/pair-planning.md) before step 1. It is the source of truth for independent drafts, shared context, exact-session replies, failures and convergence. Use `.claude/scripts/feature-pair.py`; do not improvise CLI background jobs or waits. Fable hosts `/feature` in Claude Code; Astra hosts `$feature` in Codex. Both independently contribute before the initial discussion, before plain-plan approval, to the detailed plan, and to critique adjudication. The host saves its answer before the peer starts, and neither sees the other's answer until the explicit exchange opens. One combined result emerges from each exchange.
+Read [the pair-planning protocol](references/pair-planning.md) before step 1. It is the source of truth for independent drafts, shared context, exact-session replies, failures and convergence. Use `.claude/scripts/feature-pair.py`; do not improvise CLI background jobs or waits. Fable hosts `/feature` in Claude Code. Sol partners with it for scope, the plain-language plan and routine critique adjudication. Astra partners with it only for independent detailed planning and reconciliation, returning later only for a substantial redesign supported by a verified finding. Pass the matching `--phase` to every new pair. Codex hosts follow the phase-specific model rule in the protocol. The host saves its answer before the peer starts, and neither sees the other's answer until the explicit exchange opens. One combined result emerges from each exchange.
 
 This addition applies to `/feature` only. When `/amend` calls step 1, 3 or 6 of this file, it keeps its existing single-host planning and adjudication; it does not invoke the pair protocol. Build, QC, amendment and ship scope are unchanged.
 
@@ -92,7 +92,7 @@ Show the owner this document, then END YOUR TURN and wait. They read it, push ba
 
 ## 5. Write the detailed plan (technical, inline, owner never reads it)
 
-After approval, write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. No code, no snippets: build writes all of that once, from this document.
+After approval, use the Fable + Astra detail phase and write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. No code, no snippets: build writes all of that once, from this document.
 
 It has EXACTLY these parts, in this order, with these headings, because each later stage reads specific parts and nothing else:
 
@@ -145,7 +145,7 @@ Once the detailed plan is complete, the session itself runs the critique directl
 
 4. As each lane returns, do that lane's share right away, while the others are still running: run `bash .claude/scripts/lane.sh findings <lane>` (writes `.feature/lanes/<lane>.findings.json`, ONLY the findings JSON array, and prints ONE state line, see the lane-state table in step 6.5; a codex `--json` lane's raw `.out` is the full JSONL event stream, hundreds of KB, so nothing downstream ever reads the raw `.out` files), read that findings file, and write that lane's disposition lines into `.feature/critique-dispositions.md` (step 5's STEP ONE), each marked with the lane name. If the state line is `INVALID`, `FAILED`, or `TIMED_OUT` and carries `resume_id=`, make the ONE bounded resume attempt here, before dispositioning that lane: resume the lane's own stored session so the model finishes its own answer (`grok --resume <resume_id>` or `agy --conversation <resume_id>`; codex lanes have no resume and are simply dead), launched as a new lane named `<lane>-resume` with the same sandbox and denials as the original, at most 5 turns, told to investigate nothing, use only the work already in its context, and emit only the findings JSON (`[]` is a valid answer). Classify the resumed lane's output with the same state table; run the attempt at most once per lane per round, and a second invalid result makes the lane dead. Never read prose, partial output, or a reasoning trace as findings. Do NOT edit either plan file yet: the plan is edited exactly once, after the last lane is in, so a finding two lanes raised independently is recognized as high-confidence, duplicates across lanes are merged, and there is a single hunk pass instead of four. When the last lane's wait returns, only its share is left, so the tail after the slowest lane is short.
 
-5. For `/feature`, jointly adjudicate with the independent adjudication round and exchange in the pair protocol. The host's accumulated dispositions are its private first answer, not final decisions. The peer gets the entire findings corpus and the same plans, but not those dispositions, until exchange. Settle one joint dispositions record and the intended edits before STEP TWO. For `/amend`, retain in-session adjudication without this pair round. In either case, every finding gets a disposition before anything is edited, and the written record is what the owner can ask to see. Apply the following evidence and editing rules:
+5. For `/feature`, Fable and Sol jointly adjudicate with the independent adjudication round and exchange in the pair protocol. The host's accumulated dispositions are its private first answer, not final decisions. The peer gets the entire findings corpus and the same plans, but not those dispositions, until exchange. Settle one joint dispositions record and the intended edits before STEP TWO. For `/amend`, retain in-session adjudication without this pair round. In either case, every finding gets a disposition before anything is edited, and the written record is what the owner can ask to see. Apply the following evidence and editing rules:
    - Read each lane's extracted findings file ONLY: `.feature/lanes/<lane>.findings.json` for each lane launched in step 6.2. Never open a raw `.out`. What a lane's state line means (`lane.sh findings` prints exactly one of these, and it, not the file's contents, is what classifies the lane):
 
      | State | What happened | What this session does |
