@@ -22,8 +22,8 @@ SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}},
           "required": ["answer"], "additionalProperties": False}
 MODELS = {'fable': 'claude-fable-5', 'sol': 'gpt-5.6-sol', 'astra': 'gpt-6-astra'}
 PHASES = {'scope': 'sol', 'plain': 'sol', 'detail': 'astra',
-          'design-review': 'sol', 'adjudication': 'sol', 'redesign': 'astra'}
-RESEARCH_PHASES = {'scope', 'plain', 'design-review'}
+          'design-feedback': 'sol', 'adjudication': 'sol', 'redesign': 'astra'}
+RESEARCH_PHASES = {'scope', 'plain', 'design-feedback'}
 RULES = """You are the independent peer in /feature, not its coordinator.
 Do only the assignment below. Do not invoke /feature or another workflow.
 Read repository source as needed, but do not change repository files, git,
@@ -53,10 +53,10 @@ def rules(state):
                     'interpretation replace the original owner input or references.\n')
     else:
         research = 'Do not run browsers or previews in this phase.\n'
-    if state['phase'] == 'design-review':
-        research += ('Review the actual supplied design images against the agreed direction. '
+    if state['phase'] == 'design-feedback':
+        research += ('Respond to the owner\'s critique of the supplied design and propose how to revise it. '
                      'The coordinator\'s description supplements those images, never replaces them. '
-                     'Report if you cannot view them rather than returning a visual verdict.\n')
+                     'This is an owner-requested revision discussion, not an automatic review after generation.\n')
     images = state.get('images', [])
     visual = ('Shared image files (read these directly; attached to Codex calls):\n' +
               '\n'.join(str(Path(state['run']) / p) for p in images) + '\n') if images else ''
@@ -354,8 +354,8 @@ def main():
         brief, draft = read_text(args.brief), read_text(args.host_draft)
         owner_input = read_text(args.owner_input)
         images = image_inputs(args.image)
-        if args.phase == 'design-review' and not images:
-            raise ValueError('design-review requires --image with the actual generated design')
+        if args.phase == 'design-feedback' and not images:
+            raise ValueError('design-feedback requires --image with the actual generated design')
         repo = Path(args.repo).resolve()
         if not repo.is_dir():
             raise ValueError('Repository directory is missing')
@@ -404,9 +404,11 @@ def main():
                               'host_draft': read_text(run / 'host-draft.md'),
                               'peer_answer': read_text(run / f"answer-{state['turn']}.md")}))
         elif args.cmd == 'reply':
+            if state['phase'] == 'design-review':
+                raise ValueError('Automatic design review is retired. Show the design and wait for owner feedback.')
             if state['status'] != 'EXCHANGED':
                 raise ValueError('Exchange the completed answer before sending a reply')
-            limit = 2 if state['phase'] == 'design-review' else 3
+            limit = 2 if state['phase'] == 'design-feedback' else 3
             if state['turn'] >= limit:
                 raise ValueError(f'{limit} follow-ups used. Bring remaining choices to the owner.')
             message = read_text(args.message)
