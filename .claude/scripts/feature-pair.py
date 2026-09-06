@@ -53,6 +53,10 @@ def rules(state):
                     'interpretation replace the original owner input or references.\n')
     else:
         research = 'Do not run browsers or previews in this phase.\n'
+    if state['phase'] == 'design-review':
+        research += ('Review the actual supplied design images against the agreed direction. '
+                     'The coordinator\'s description supplements those images, never replaces them. '
+                     'Report if you cannot view them rather than returning a visual verdict.\n')
     images = state.get('images', [])
     visual = ('Shared image files (read these directly; attached to Codex calls):\n' +
               '\n'.join(str(Path(state['run']) / p) for p in images) + '\n') if images else ''
@@ -350,6 +354,8 @@ def main():
         brief, draft = read_text(args.brief), read_text(args.host_draft)
         owner_input = read_text(args.owner_input)
         images = image_inputs(args.image)
+        if args.phase == 'design-review' and not images:
+            raise ValueError('design-review requires --image with the actual generated design')
         repo = Path(args.repo).resolve()
         if not repo.is_dir():
             raise ValueError('Repository directory is missing')
