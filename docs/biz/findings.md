@@ -1,71 +1,76 @@
-# Findings from everyone else who engaged
+# Customer Discovery (Jul - Aug)
 
-Evidence with quotes, filtered to what carries learning. Compliments and future-tense promises are recorded as absence of signal, not interest. All quotes verbatim.
+Read the cohort definition and pipeline table first for each group, then the bullets under it for what showed up across that group. Person-level exchanges that carried signal sit under Demoed Responses below.
 
-## 3.1 Liam Ottley (@ottleyai), creator, demoed. The most engaged non-family person, explicitly not buying
+## Cohort
 
-- **Who:** prominent AI tools/news creator; ~71 percent of a 38-post sample were numbered listicle or roadmap threads, 37 of 38 with multiple line breaks. Replied within an hour of the 2026-08-09 outreach but declined a call in favor of messages, and asked in that first reply whether there was a paid budget (answered: none).
-- **His sources, verbatim:** "Most of my discovery is X-first. I regularly keep an eye on official accounts from OpenAI, Anthropic, Google DeepMind, xAI, Qwen/Alibaba, Hugging Face, and the founders/product teams behind newer AI tools. Outside X, I also check places like Product Hunt, GitHub releases/trending projects, and major AI/tech news when something starts getting traction. A big part of my workflow is spotting something early, then deciding whether it's worth a quick take, a repost, or a deeper thread based on how useful or interesting it is for my audience."
-- **After a personalized demo (2026-08-12: desk with 16 of his accounts and 4 sites, his Guide, sample drafts, and a Skipped list with reasons):** "This is looking really interesting. I like how Oparax is filtering out unrelated stories instead of just pulling everything from the sources, and the writing guide seems to have picked up a lot of my usual patterns. I'd definitely be interested in testing it as an early adopter. Thread-style drafting would be especially useful for my workflow, since I often turn bigger AI updates, tools, and tutorials into threads. GitHub integration would also be useful eventually, especially for spotting new AI projects and releases, but I think the current sources are enough to start testing. Let me know what you need from me for the next step. I'd be happy to use it and give you feedback as I go."
-- **Then, unprompted, the hard commercial line:** "Just to be clear, I'm not looking to subscribe to or purchase any tools right now, so I'd prefer to keep this at the demo/feedback stage for now."
-- **Learning:** strongest non-family engagement in the record, and still zero commitment of money, attended time, or reputation. His one named need is thread-style drafting; he was promised it within a week, it was deprioritized, and the promise is now overdue with no honest update sent. Structural mismatch besides: his content is evergreen teaching threads, so breaking-news speed, the core value, does not apply to him. He never set up a desk.
+X posters (10k-500k followers) not Reshad. Outreached via X DM.
 
-## 3.2 Nihan (@CodebyNihan), creator, demoed. Gave the sharpest product insight in the record
+### Reporters
 
-- **Who:** AI creator, about two-thirds numbered how-to threads; distinctive behavior of reposting others' content with his own commentary on top.
-- **His workflow, verbatim:** "I first came across the topic while browsing X and checking updates from AI-focused accounts and product/company pages or Thread apps. I usually look for something that feels genuinely useful, interesting, or timely for my audience rather than simply reposting what's trending. Once I find a topic worth covering, I decide on the format based on the content. If it's a quick insight or update, I'll usually go with a Single Post, Thread Post, short post or quote tweet. If there's more to explain, I prefer a thread, carousel, or demo-style post. For the wording, I start with the core idea, then simplify it into a strong hook, highlight the most useful points, and rewrite it in a clear and natural way that fits my audience."
-- **His feedback on the emailed demo (2026-08-20), asked for bluntness and delivering it:** "I went through the screenshots, and overall the setup looks quite close to how I actually approach content. ... For the Feed and Skipped sections, I'll be blunt: the direction looks good, but there are still a few cases where my personal judgment would differ. Some stories that might look relevant on the surface aren't necessarily worth posting for my audience, while some smaller AI/product updates can be valuable if they have a strong hook or practical angle. I think that's actually the most important part to improve, learning not just what topics I post about, but what makes me decide, 'Yes, this is worth posting.' Overall, though, I think you're on the right track. The writing-style detection especially looks interesting."
-- **Learning:** the hard problem is not topic classification but modeling the decision to post. Arguably the sharpest strategic insight any customer supplied. Asked on 2026-08-22 to stop judging screenshots and set up his own free desk (four steps listed, 15-minute call offered): no response, no desk. Talk was free; the activation ask exposed it.
+NFL/NBA/Soccer/Politics/Crypto posting accounts. Some actual sort of reporters or content creators on valid news; others aggregators. 
 
-## 3.3 Sacha Tavolieri (@sachatavolieri), reporter, conversed. The one cold prospect who matches the hypothesis
 
-- **His situation, verbatim:** "I'm Commenting games and weiting articles for Sky Sport CH, producing content for my social médias and for brands + working in partnership with big international medias."
-- **On how he avoids missing breaks while commentating:** "No set up only good sources that are alerting me on whatsapp haha."
-- **On whether that fails:** "Everything can happen." Pressed on whether it has actually happened to him: "Can happen yeah."
-- **On a 15-minute call:** "I'm very busy mate so not next week sorry." He did not reject the product or future contact.
-- **Learning:** no monitoring system at all, dependent on informal human WhatsApp alerts, admits misses, and structurally distracted (live commentary) at exactly the moments news breaks. Best-fit cold prospect found anywhere, and he was never sent a concrete demo. Open, unexploited lead. Reshad knows him professionally.
+| Stage | Reporters | Comments                                             |
+| ----- | --------- | ---------------------------------------------------- |
+| List  | 178       |                                                      |
+| Text  | 89 (-50%) | Largely unreachable: half the list could not be DM'd |
+| Chat  | 5 (-94%)  | Almost none of those reached replied                 |
 
-## 3.4 Michael DiRocco (@ESPNdirocco), reporter, conversed. The pain is real but rare
 
-- **His workflow:** "I'm always monitoring with texts and calls and check-ins anyway, and I just make sure I have my phone pretty much on me at all times, and especially as the trade deadline nears. Plus, I'm helped by the ESPN national reporters who are doing the same with their sources."
-- **On public breaks beating his sources:** "I've got alerts set up for team X site as well as a lot of other NFL/Jaguars reporters so I'm able to react quickly if that happens. Sometimes, though, it can slip through and if that's the case then I just have to hustle to follow it up."
-- **On how often, the number that matters:** "Probably somewhere in between. Couple times a year, maybe? Hate it when it does, obviously, because it's my job to be on top of stuff."
-- **On whether lower-tier reporters feel it harder:** "All the reporters I deal with on the Jags beat rely on sources. Everybody gets caught by surprise at one time or another, though. Just the nature of what we do."
-- **Re-contact permission with something concrete to show:** "Absolutely."
-- **Learning:** a twice-a-year annoyance does not support a recurring subscription. Significant negative evidence against the newsroom-backed reporter as a customer, with an explicit door left open.
+- **100% of reporters who chatted (5 of 5)** get their news through texts, calls, or WhatsApp from people they know, before it appears on X.
 
-## 3.5 Marcus Thompson II (@ThompsonScribe), reporter, conversed. Challenged the core premise
+### Content Creators (AI and Tech)
 
-- **His argument (multi-message, 2026-07-30/31):** major reporting information usually reaches reporters from sources before it ever hits social media, and once a break does reach X it spreads so fast it is hard to miss. He distinguished roles: single-beat reporters are expected to break news; columnists, general-assignment and feature writers can afford to receive it later. Terminology he supplied: newspapers say "beat writer," TV and radio say "insider."
-- **Learning:** directly challenges the assumption that reporters broadly have a monitoring problem, and reframes the target narrower: the person who does not get the original source call but still must react fast once news is public. A final question testing exactly that was sent and never answered.
+*Pretend AI engineers* who project expertise, posting stuff like "10x your workflow by purchasing this skill from me", "Use X AI tool as an expert", "This is the latest updates on Models from frontier lab X, Y and Z". 
 
-## 3.6 Eric Pincus (@EricPincus), reporter, replied. The cleanest disqualification of the premise
 
-- **His full reply:** "I don't really get my information via Twitter/X, it's mostly communicating with people I know. I just need to be on top of texts and other forms of communication. Cheers, EP"
-- **Learning:** for an established reporter the information supply chain is private (texts, calls, relationships), not public. A product monitoring public sources aims at the wrong half of that workflow. Sharpest segment evidence in the record. Closed politely.
+| Stage  | Creators  | Comments                                                       |
+| ------ | --------- | -------------------------------------------------------------- |
+| List   | 23        |                                                                |
+| Text   | 23 (0%)   | No barrier to outreach: all could be DM'd (emails in bios too) |
+| Chat   | 11 (-52%) |                                                                |
+| Demo   | 2 (-82%)  |                                                                |
+| Active | 0 (-100%) | None activated                                                 |
 
-## 3.7 The creators who wanted payment
 
-- **Dr Sania (@iamsania_ai):** warm first reply ("I'm a open to collaboration"), then by email asked for scope and budget. After two clarifications that this was a free beta seeking honest feedback: "At the moment, I primarily work on fixed-fee collaborations with brands and products. If you're open to a paid collaboration for introducing Oparax to my audience, I'd be happy to discuss the deliverables, budget, and campaign details." Closed cleanly ("our goals are not aligned right now"); she responded graciously. Correct disqualification: she sells audience access, she does not buy tools.
-- **Aiden Tech (@aiden_tech_ai), full reply:** "I am interested Only paid collaboration. If you give me the promotion plz let me know." Declined same day. Terminal.
-- **Lucas Walker (email only):** described himself as someone who "work[s] with AI companies and clients, creating and promoting content around their products and tools," then asked "whether you have a budget or any paid collaboration opportunities available for this partnership." Told no budget, offered a call: no further reply.
-- **Learning:** to a creator, inbound from a company is a sponsorship offer by default. 4 of 11 creator replies (including Liam's first message) asked about money before asking about the product.
+- **Self-interest / self-promotion:** 5 of 11 who chatted (45%) raised money before the product came up: asked to be paid, for a paid collab, or whether a budget existed. Sell their own eyeballs.
+- **Low signal:** 4 of 11 who chatted (36%) said yes to being an early user or to a chat, then went silent at the first ask that required work (discovery questions, a call booking, a calendar invite).
+- **Outreach channel friction:** 1 of 11 (9%) declined explicitly. 1 of 11 (9%) confirmed 2 calls in writing and joined neither, after 3 conflicting invites from Oparax across a 12.5 hour timezone gap. May be approach, booking, or timezone, not only the cohort.
 
-## 3.8 The soft-fade cohort: agreement is free, work is not
 
-- **Monetization blogger (@monetizationdon):** "tell me more", then after the explanation: "ok, what does this involve financially". Told free beta: "ok". Offered a 20-minute onboarding call: "ok. i will let you know." Never followed up. Textbook polite non-commitment: no time, reputation, or money ever at risk.
-- **How 2 AI (@how2use_ai):** agreed to be an early user ("Yea sure"), then went silent when sent the real discovery questions (walk through one recent post, list your sources). Answering four detailed questions is work; agreeing is not.
-- **Grace Wilson (@hey_gracewilson):** "I'd definitely be open to a quick chat and learning more about how you're building the early creator version." Calendar invite sent; no record of the call, no further messages.
-- **Jason Coder (@jason_coder0):** "Yes, I would be interested." Detailed reply with discovery questions and a booking link: nothing since.
-- **AI Explorer (@ai_explorer25), the only clean explicit no:** "currently I am not interested for the same. Will let you know if I will be interested later." A clear decline is more useful than every soft yes above.
 
-## 3.9 Abhay Giri (@abhayaitech), creator. A process failure, not a product rejection
+## Demoed Responses
 
-- **What happened:** replied within nine minutes of outreach ("I'd be happy to chat and share how I currently discover, research, and create content for X."). Then Oparax sent three conflicting calendar invitations within eight minutes (8:00, 8:30, 8:45 AM Pacific) plus a fourth correcting email. He confirmed and no-showed the 2026-08-10 call; proposed "today 9 pm IST" with no notice, missed; explicitly confirmed a third slot ("Yes, confirmed.") and no-showed again. Closed out after a 15-minute wait: "Since we've unfortunately missed each other twice, I'll leave it with you to reach out if you're still interested."
-- **Learning:** a 9 to 12.5 hour timezone gap makes live calls fragile, and confusing invitations early in a relationship destroy the small commitment a cold contact has. Own-goal, worth not repeating.
+Aug 9, simulated a desk for both of them manually by myself and sent them back images from the feed, the skipped sources, and the voice guide sections.
 
-## What the segment evidence says together
+### Liam Ottley (@ottleyai)
 
-- **Established reporters do not have the problem:** sources reach them before X does (Pincus, DiRocco, Thompson). Reply rate ~2 percent, and the ones who reply mostly explain why they do not need it.
-- **Creators have attention but not intent:** reply rate ~48 percent, but they monetize audiences and treat tools as sponsorship inventory. Zero of 23 activated.
-- **The untested hypothesis:** the under-resourced reporter or high-volume aggregator who must react fast to public news without getting the source call (Sacha's profile, Reshad's actual peer group). That group was never systematically contacted.
+- **Declined a call but preferred to stay engaged over messages**, replying within 1 hour on both channels and asking to hear how it works, what would be needed from him, and what the early creator version would look like.
+- **Inquired whether a paid budget was involved** in the same first email. He was told there was no budget and no cost, only a request for honest feedback.
+- **Asked to see concrete examples before anything else**, specifically how Oparax would interpret his content style and his source selection, and how it would tell apart what to suggest as a repost, a commentary, or a thread. He said he liked that he keeps full control over what actually gets published.
+- **Gave his sources when asked.** Discovery is X first: the official accounts of OpenAI, Anthropic, Google DeepMind, xAI, Qwen/Alibaba and Hugging Face, plus the founders and product teams behind newer AI tools. Off X he checks Product Hunt, GitHub releases and trending projects, and major AI/tech news once something starts getting traction.
+- **Described a big part of his workflow as spotting something early**, then deciding whether it is worth a quick take, a repost, or a deeper thread based on how useful or interesting it is for his audience. The writing guide measured 27 of his 38 sampled posts as numbered listicle or roadmap threads.
+- **Saw the demo on Aug 12**: 16 of his accounts and 4 sites on the Sources screen, his guide, a kept story, and the Skipped list. He was told thread-style posts were not yet handled and GitHub was not yet wired.
+- **Said 2 things matched him**: that Oparax filters out unrelated stories instead of pulling everything from the sources, and that the guide picked up a lot of his usual patterns. On that basis he said he would definitely be interested in testing as an early adopter.
+- **Asked for thread-style drafting** because he often turns bigger AI updates, tools and tutorials into threads. GitHub integration would be useful eventually, especially for spotting new AI projects and releases, but the current sources were enough to start testing.
+- **Drew a commercial line without being asked**, when offered a next step of wiring those 2 features and demoing again before any signup: he is not looking to subscribe to or purchase any tools right now and would prefer to keep this at the demo and feedback stage. Told no commitment was needed, he said he was happy to test it and give genuine feedback on what works, what could be improved, and where it fits his workflow.
+- **Asked to be followed up on X in a week.** He was told thread drafting and GitHub would be wired within 1 day. Nothing has been sent or received since Aug 12. He has not set up a desk.
+
+
+
+### Nihan (@CodebyNihan)
+
+- **Replied the same day, open to questions**, saying the idea sounded interesting, especially the part about turning sources into drafts that match a creator's actual posting style.
+- **Walked through a recent post 3 days later**, when asked where it came from, what made it worth covering, why that format, and how the wording was shaped. That one message carried 4 separate things, below.
+- **How he finds a topic and decides it is worth covering.** He comes across topics while browsing X and checking updates from AI-focused accounts, product and company pages, and Threads. He looks for something that feels genuinely useful, interesting, or timely for his audience, as opposed to simply reposting whatever is trending.
+- **His regular sources.** AI-focused X accounts, official product and company accounts, Product Hunt, TechCrunch, Threads, and AI newsletters. He also monitors new AI tools and product launches to find things worth sharing.
+- **How he chooses format, once a topic is chosen.** If it is a quick insight or update he goes with a single post, a short post, a thread post, or a quote tweet. If there is more to explain he prefers a thread, a carousel, or a demo-style post.
+- **How he shapes the wording.** He starts from the core idea, simplifies it into a strong hook, highlights the most useful points, rewrites it in a clear and natural way that fits his audience, and keeps the post easy to scan without unnecessary information.
+- **Asked to move to email**, and agreed to a demo in a week.
+- **Received the demo by email on Aug 18**: 4 screenshots (sources, guide, a kept story, Skipped with reasons) plus 2 questions. He was told reposts and quote tweets, a large share of his feed, were not handled yet and to judge only original posts. The guide had measured roughly 2/3 of his on-beat posts as numbered how-to threads.
+- **Replied 2 days later that the setup looked quite close to how he actually approaches content.** On his best thread (9 free Google courses) he first came across it on X while browsing other creators' posts, and on a website too; he does not remember the exact time gap, only that it was relatively quick between discovering and posting.
+- **Judged Feed and Skipped bluntly, as asked.** The direction looked good, but there were still a few cases where his personal judgment would differ, in both directions: some stories that look relevant on the surface are not necessarily worth posting for his audience, while some smaller AI or product updates can be valuable if they have a strong hook or a practical angle.
+- **Named that as the most important thing to improve**: learning not just what topics he posts about, but what makes him decide that a given story is worth posting. He added that Oparax was on the right track and that the writing-style detection especially looked interesting.
+- **Was asked on Aug 21 to stop judging screenshots and set up his own free desk**, with 4 steps listed, 1 more question about the Google courses thread, and a 15-minute booking link as an alternative. No reply as of Sep 3. He has not set up a desk.
+
