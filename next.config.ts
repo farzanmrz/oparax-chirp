@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
   // webhook entry was deleted with the whole dormant email-correction path — do not re-add any
   // without a route to match. See .claude/rules/agent.md's "Bundling the prompts for deploy".
   outputFileTracingIncludes: {
+    "/opengraph-image": ["./assets/fonts/*.ttf"],
     "/api/ingest": ["./lib/sysprompts/*.md"],
     "/api/sources/refresh-strip-phrases": ["./lib/sysprompts/*.md"],
     "/agents/new": ["./lib/sysprompts/*.md"],

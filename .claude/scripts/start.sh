@@ -167,7 +167,20 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 }
 cd "$repo_root"
 
+commit_tool_config() {
+  # Tool configuration written mid-flow under .claude/ or .codex/ is committed and
+  # pushed on the current branch instead of walling the stage (owner decision
+  # 2026-09-06). Anything outside those two directories still fails the check.
+  if [ -n "$(git status --porcelain --untracked-files=all -- .claude .codex)" ]; then
+    git add -A -- .claude .codex
+    git commit -q -m "meta: commit tool configuration under .claude and .codex" >&2 || return 0
+    git push -q origin HEAD >&2 \
+      || echo "start: committed tool configuration but could not push it, push manually." >&2
+  fi
+}
+
 require_clean_tree() {
+  commit_tool_config
   # `git diff` alone misses untracked files, which could otherwise hitchhike
   # into the slice.
   if [ -n "$(git status --porcelain --untracked-files=all)" ]; then

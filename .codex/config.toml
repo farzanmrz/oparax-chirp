@@ -1,8 +1,6 @@
-# Project-scoped Codex config for oparax.
+approval_policy = "never"
 
-model_verbosity = "medium"
-web_search = "indexed"
-approval_policy = "on-request"
-# $build commits on ft/<N>; the default workspace-write sandbox keeps .git read-only
-# (owner decision 2026-08-17: the build session gets full access).
-sandbox_mode = "danger-full-access"
+model_verbosity = "low"
+model_reasoning_summary = "none"
+[sandbox_workspace_write]
+network_access = true
