@@ -7,22 +7,22 @@ description: >-
   checks plan coverage and runs the gates, launches five review lanes
   in the background (two Codex, two agy, grok), does its own holistic review of
   the real diff while they run, then folds every set of findings into one fix list written to
-  .feature/fixes-<N>.md for build's fix mode, and hands back to the owner.
+  .feature/fixes-<N>.md for build's fix mode, presents them for owner approval, then launches Codex build on approval.
   No Workflow tool, no subagents. Use when the user says /qc <N>. Not for
   building or fixing; both are $build in Codex or /build in Claude Code.
 argument-hint: "[issue #]"
-allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Write Read Edit Grep Glob
+allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Monitor Write Read Edit Grep Glob
 model: inherit
 disable-model-invocation: true
 ---
 
 # QC: review what build built, hand the fix list back to build
 
-One session, start to finish. Every step below runs on its own; the owner types nothing between `/qc <N>` and the final message. This skill never builds, never applies findings, never runs journeys; it ends by naming `$build <N>` (fix mode) or `/ship <N>`.
+One session, start to finish. Every step below runs on its own; the owner types nothing between `/qc <N>` and the final message. This skill never builds, never applies findings, never runs journeys; when fixes exist it presents them, waits for approval, launches Codex build and stops; with no fixes it names `/ship <N>`.
 
 ## Working style, every step of this command
 
-- **This run is autonomous.** The owner is not answering questions mid-run, so never end a turn to ask one; the only mid-run stops are the STOP conditions written into the steps below (wrong branch, unapplied fixes, a missing or half-built step, a non-mechanical red gate), each of which ends the run with a plain blocker. Before ending any turn, reread your last paragraph: if it is a plan, an analysis, or a promise about work not yet done ("I'll..."), do that work now with tool calls. End only on a STOP or on the step-8 final message.
+- **This run is autonomous.** The owner is not answering questions mid-run, so never end a turn to ask one; the only mid-run stops are the STOP conditions written into the steps below (wrong branch, unapplied fixes, a missing or half-built step, a non-mechanical red gate), each of which ends the run with a plain blocker. Before ending any turn, reread your last paragraph: if it is a plan, an analysis, or a promise about work not yet done ("I'll..."), do that work now with tool calls. End only on a STOP or on the final owner-approval checkpoint. After approval, perform only the step-9 launch and stop again.
 - **Claim only what you can point to.** Every statement in the final message rests on a tool result from this run: the diff you read, a gate's output, a lane's state line. If tests or gates failed, say so with what they printed; if something was skipped or is unverified, say that; what is done and verified is stated plainly without hedging.
 - **The fix list stays minimal.** A fix item corrects exactly what its finding names: no surrounding cleanup, no refactors, no abstractions or defenses for scenarios that cannot happen. The simplest change that resolves the finding is the fix.
 - **The owner reads product language, not a terminal.** The step-8 message leads with the outcome in complete plain sentences; no arrow chains, no shorthand or names invented mid-run, no vocabulary from the working thread. Short versus clear, choose clear.
@@ -183,16 +183,12 @@ No code terms, no raw findings, no file paths, no finding counts, no drop counts
 - **Open questions:** each as a plain question with its tradeoff in one sentence.
 - **One closing line:** each lane's elapsed seconds from its DONE line, and "the <lane> review pass did not come back" for any dead lane (a lane whose state was `INVALID`, `FAILED`, or `TIMED_OUT` and whose resume attempt did not produce a valid payload). A `NO_FINDINGS` lane came back and found nothing: report it like any other working lane and never use the did-not-come-back wording for it. A dead lane never stops the run. If the owner asks what was dropped, read `.feature/qc-dispositions.md` and answer in plain words; never volunteer it.
 
-## 9. End: name the next command
+## 9. Approve fixes, launch build, then stop
 
-With fixes queued:
+With fixes queued, finish the presentation with: "Approve these fixes to apply them with Sol High. Say Astra or Terra if you prefer, or tell me to leave the build for you to launch." STOP for the owner's approval. A `/qc` invocation alone is not approval of findings that were not yet presented. If the owner changes the fix list, update it before dispatch.
 
-<exit-example>
+After approval, follow [the build handoff](../feature/references/build-handoff.md), using `--source qc`. Default to Sol High for this fix run unless the owner explicitly selects another build model; do not inherit the feature planning model or a previous build override. The same `$build <N>` command picks FIX or AMEND mode using its existing rules. No separate model question is needed.
 
-Review done. Gates GREEN. Four fixes are queued for build (listed above): `$build 123` in Codex, or `/build 123` in Claude Code.
+Launch once, register the background completion watcher where available, tell the owner which model started, and STOP. Claude does not apply the fixes itself or poll progress. On completion, relay the actual result and the build skill's walkthrough/next command, then stop; do not auto-launch another QC round or ship.
 
-It will pick fix mode on its own, apply them, post the round marker, and end with the plain walk-through of what to check on your local server before `/ship 123`.
-
-</exit-example>
-
-With no fixes: there is no fix round to carry the walk-through, so this message carries it, in the same three-block shape `$build`'s fix mode uses: **Do this now** (the single shortest walk that proves what this branch or this round changed, five numbered steps at most, plain words, ending with the one-word reply to give), **Then, only if that passed** (the remaining acceptance journeys this round touched, each as its own short walk; journeys already walked in an earlier round and untouched since are named in one line, not repeated), **At ship** (part 4 as a short checklist). Then `/ship <N>`. Never dispatch anything else and never touch the branch further.
+With no fixes: there is no fix round to carry the walk-through, so this message carries it, in the same three-block shape `$build`'s fix mode uses: **Do this now** (the single shortest walk that proves what this branch or this round changed, five numbered steps at most, plain words, ending with the one-word reply to give), **Then, only if that passed** (the remaining acceptance journeys this round touched, each as its own short walk; journeys already walked in an earlier round and untouched since are named in one line, not repeated), **At ship** (part 4 as a short checklist). Then `/ship <N>`. Do not launch build when there are no fixes. Never auto-dispatch ship or another QC round.

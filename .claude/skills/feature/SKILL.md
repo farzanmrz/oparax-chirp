@@ -8,25 +8,25 @@ description: >-
   check the plan against them, agree the plan with the owner, write the
   detailed plan with independent Fable and Astra drafts, run a four-lane critique
   directly in this session plus adjudication, present the revised plan,
-  and on approval create the GitHub issue and cut the branch. Use when
+  and on final approval create the GitHub issue, cut the branch, and launch Codex build. Use when
   the user says /feature, "let's plan a feature", or brings a new
   capability idea to talk through. Bugs use it too, starting from the
   repro. Not for building ($build <N> in Codex, or /build <N> in Claude
   Code, comes after this skill ends).
-allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Skill Read Write Edit WebFetch WebSearch
+allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Skill Read Write Edit WebFetch WebSearch Monitor
 model: claude-fable-5
 disable-model-invocation: true
 ---
 
 # Feature: talk, plan (owner-facing then detailed), skill bundles, critique, issue + branch
 
-One session, start to finish. Nothing here auto-dispatches the next stage of the overall flow: this skill ends by naming `$build <N>` for the owner to run themselves, in Codex or as `/build <N>` in Claude Code.
+One planning session. After the owner approves the final revised plan, create the issue and branch, launch `$build <N>` through Codex CLI, and stop. The launch defaults to Sol High unless the owner selects Astra or Terra for that build. Earlier scope, design and plain-plan approvals do not launch build.
 
 ## Fable, Sol and Astra participation
 
 Read [the pair-planning protocol](references/pair-planning.md) before step 1. Use `.claude/scripts/feature-pair.py` for sealed independent drafts, tracked execution and exact-session replies. Fable hosts in Claude Code. By default Sol partners for discussion, design review, the plain plan and adjudication; Astra partners for detailed planning and substantial redesign. An initial `Astra` token after `/feature` (any capitalization), or the owner's explicit request to use Astra for the pairwise phases, selects Astra for those routine pairs too. Record the selection for this feature and pass `--pair-model sol|astra` on every start. This never changes the four critique lanes or QC. Announce the selected partner and high effort once. Do not infer an override from an incidental model mention in the brief. Codex hosts must match the selected phase model. The host seals its own answer before the peer starts; neither sees the other's answer until exchange.
 
-This addition applies to `/feature` only. When `/amend` calls step 1, 3 or 6 of this file, it keeps its existing single-host planning and adjudication; it does not invoke the pair protocol. Build, QC, amendment and ship scope are unchanged.
+This addition applies to `/feature` only. When `/amend` calls step 1, 3 or 6 of this file, it keeps its existing single-host planning and adjudication; it does not invoke the pair protocol. Build, QC review, amendment and ship scope are unchanged; only the approved feature and QC handoffs can launch build.
 
 ## Working style, every step of this command
 
@@ -176,7 +176,8 @@ Show the owner, in this order, and nothing else:
 1. Read `.feature/plan-owner.md` fresh off disk and paste it whole, verbatim, as the very first thing in the message, before any remark about the run. This is the only re-emission of the plan anywhere in this skill.
 2. The **`whatChanged`** list, as Added/Changed/Removed one-liners, each with its reason.
 3. Any **`openQuestionsForOwner`**, each phrased as a plain question with the tradeoff in one sentence.
-4. One closing line: each lane's elapsed seconds (from the DONE lines in step 6.3) and any dead lane named plainly. A lane that returned `NO_FINDINGS` is reported like any other lane that worked ("nothing found"), never as a lane that did not come back. Nothing else about lanes, counts, findings, or drops belongs in this message.
+4. Build handoff: "Approve this plan to create the issue and start the build with Sol High. Say Astra or Terra if you prefer, or tell me to leave the build for you to launch." This is part of the final plan approval, not another question afterward.
+5. One closing line: each lane's elapsed seconds (from the DONE lines in step 6.3) and any dead lane named plainly. A lane that returned `NO_FINDINGS` is reported like any other lane that worked ("nothing found"), never as a lane that did not come back. Nothing else about lanes, counts, findings, or drops belongs in this message.
 
 If the owner asks what was dropped, read `.feature/critique-dispositions.md` and answer in plain words; never volunteer it unasked.
 
@@ -215,14 +216,14 @@ Once the owner says yes to the revised plan:
    mv .feature/plan-owner.md .feature/plan-<N>-owner.md
    ```
 
-## 9. End: name the next command
+## 9. Launch the approved build, then stop
 
-The last act before the closing message: run `git branch --show-current` and confirm it prints `ft/<N>` (or `bf/<N>`); if anything in this session left the tree parked elsewhere, switch back now. The build stage reads skills and plans from the checked-out branch, so a handoff that names `$build <N>` (or `/build <N>`) while the repo sits on another branch hands it the wrong world (happened 2026-08-23: a mid-session detour left the repo on beta at handoff).
+Follow [the build handoff](references/build-handoff.md). Verify that `start.sh` left the checkout on `ft/<N>` or `bf/<N>` and that the final local plan files exist. Honor the build model explicitly requested with approval; otherwise use Sol High, regardless of the planning partner. If the owner asked to launch manually or later, simply name `$build <N>` and stop.
 
-Do not dispatch, build, or run anything else. Close with a short summary (issue number, branch, one line on what changed in the critique round) and tell the owner the next command is `$build <N>` in Codex or `/build <N>` in Claude Code, on this repo.
+Otherwise launch once, register the background completion watcher where available, report the real launch status, and STOP. No polling or further planning work while build runs. The completion callback only relays the build result and its next command; it never launches QC or ship.
 
 <exit-example>
 
-Issue #123 created, `ft/123` cut. The critique round tightened the retry cap and added an owner decision about batching. When you're ready: `$build 123` in Codex, or `/build 123` in Claude Code.
+Issue #123 created on `ft/123`. The approved build has started with Sol High. I'll report its result when it finishes.
 
 </exit-example>
