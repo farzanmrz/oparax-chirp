@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
   // The voice-extraction entry died with lib/voice — do not re-add entries without a route to
   // match. See .claude/rules/agent.md's "Bundling the prompts for deploy".
   outputFileTracingIncludes: {
+    "/opengraph-image": ["./assets/fonts/*.ttf"],
     "/api/ingest": ["./lib/sysprompts/*.md"],
     "/api/x/webhook": ["./lib/sysprompts/*.md"],
     "/api/x/reconcile": ["./lib/sysprompts/*.md"],

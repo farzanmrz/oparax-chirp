@@ -4,52 +4,56 @@ description: >-
   The whole plan side of feature work, same behavior in either host
   (it loads skill bundles with the Skill tool and runs the critique
   lanes with Bash): talk through the idea with the owner, write the
-  owner-facing plan with Fable and Sol input, load the slice's skill bundles and
+  owner-facing plan with Fable and Sol input (Astra override supported), load the slice's skill bundles and
   check the plan against them, agree the plan with the owner, write the
   detailed plan with independent Fable and Astra drafts, run a four-lane critique
   directly in this session plus adjudication, present the revised plan,
-  and on approval create the GitHub issue and cut the branch. Use when
+  and on final approval create the GitHub issue, cut the branch, and launch Codex build. Use when
   the user says /feature, "let's plan a feature", or brings a new
   capability idea to talk through. Bugs use it too, starting from the
   repro. Not for building ($build <N> in Codex, or /build <N> in Claude
   Code, comes after this skill ends).
-allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Skill Read Write Edit
+allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Skill Read Write Edit WebFetch WebSearch Monitor
 model: claude-fable-5
 disable-model-invocation: true
 ---
 
 # Feature: talk, plan (owner-facing then detailed), skill bundles, critique, issue + branch
 
-One session, start to finish. Nothing here auto-dispatches the next stage of the overall flow: this skill ends by naming `$build <N>` for the owner to run themselves, in Codex or as `/build <N>` in Claude Code.
+One planning session. After the owner approves the final revised plan, create the issue and branch, launch `$build <N>` through Codex CLI, and stop. The launch defaults to Sol High unless the owner selects Astra or Terra for that build. Earlier scope, design and plain-plan approvals do not launch build.
 
 ## Fable, Sol and Astra participation
 
-Read [the pair-planning protocol](references/pair-planning.md) before step 1. It is the source of truth for independent drafts, shared context, exact-session replies, failures and convergence. Use `.claude/scripts/feature-pair.py`; do not improvise CLI background jobs or waits. Fable hosts `/feature` in Claude Code. Sol partners with it for scope, the plain-language plan and routine critique adjudication. Astra partners with it only for independent detailed planning and reconciliation, returning later only for a substantial redesign supported by a verified finding. Pass the matching `--phase` to every new pair. Codex hosts follow the phase-specific model rule in the protocol. The host saves its answer before the peer starts, and neither sees the other's answer until the explicit exchange opens. One combined result emerges from each exchange.
+Read [the pair-planning protocol](references/pair-planning.md) before step 1. Use `.claude/scripts/feature-pair.py` for sealed independent drafts, tracked execution and exact-session replies. Fable hosts in Claude Code. By default Sol partners for discussion, design review, the plain plan and adjudication; Astra partners for detailed planning and substantial redesign. An initial `Astra` token after `/feature` (any capitalization), or the owner's explicit request to use Astra for the pairwise phases, selects Astra for those routine pairs too. Record the selection for this feature and pass `--pair-model sol|astra` on every start. This never changes the four critique lanes or QC. Announce the selected partner and high effort once. Do not infer an override from an incidental model mention in the brief. Codex hosts must match the selected phase model. The host seals its own answer before the peer starts; neither sees the other's answer until exchange.
 
-This addition applies to `/feature` only. When `/amend` calls step 1, 3 or 6 of this file, it keeps its existing single-host planning and adjudication; it does not invoke the pair protocol. Build, QC, amendment and ship scope are unchanged.
+This addition applies to `/feature` only. When `/amend` calls step 1, 3 or 6 of this file, it keeps its existing single-host planning and adjudication; it does not invoke the pair protocol. Build, QC review, amendment and ship scope are unchanged; only the approved feature and QC handoffs can launch build.
 
 ## Working style, every step of this command
 
 - **When you have enough information to act, act.** Do not re-derive facts already established in this conversation, re-litigate a decision the owner has already made, or narrate options you will not pursue. A choice that is yours to make, make and record with its reason; a choice that is genuinely the owner's becomes one plain question at the next owner checkpoint.
-- **End a turn only at this command's named stops** (the slice agreement in step 1, the plan approval in step 4, the revised-plan approval in step 7). Anywhere else, before ending a turn, reread your last paragraph: if it is a plan, a question you could answer yourself, or a promise about work not yet done ("I'll..."), do that work now with tool calls instead of ending on it.
+- **Named owner stops:** Stop for the scope discussion in step 1, the optional design-generation permission and visual approval in step 1.1, plan approval in step 4, and revised-plan approval in step 7. A failed required tool or unresolved material disagreement also needs an honest stop. Otherwise complete the authorized work rather than ending with a promise.
 - **Claim only what you can point to.** Every statement of progress or state rests on a tool result from this session: a file read, a command's output, a lane's state line. Anything not yet verified is said to be unverified, plainly.
 - **The owner reads product language, not a terminal.** In every owner-facing message, lead with the outcome in complete plain sentences. No arrow chains, no shorthand or names invented mid-session, no vocabulary from the working thread; if it comes down to short versus clear, choose clear.
 
 ## Hard rules for the planning stage
 
 - **The tree must be fresh before anything reads it.** Before the talk-through, run `git fetch origin beta` and compare `beta` to `origin/beta`. Behind with no local-only commits: fast-forward silently. Diverged (local commits AND remote commits): rebase the local commits onto `origin/beta` when they touch only meta paths (`.claude/`, `AGENTS.md`, docs), and otherwise STOP and tell the owner plainly before planning anything. Never plan, ground, or critique against a stale tree: on 2026-08-23 a ten-lane critique reviewed a beta missing the just-shipped #127 squash, several lanes correctly attacked code that was already fixed upstream, and the divergence was only caught mid-adjudication. The fetch costs a second; the stale round cost the whole re-verification pass.
-- **Planning never runs the app.** Never start or attach to a dev server, never run `pnpm dev` or the poller, never open a browser or use any browser, preview, or computer-use tool, never execute code in a page. Only the owner runs the app. This binds the command while it runs; if the owner asks in their own words in the chat to run the app or open a browser, that wins immediately (AGENTS.md).
+- **Research without running the product:** Do not start or attach to the product app or poller. During discussion and design work, the host may research public references or standalone design previews using its normal tools. Inspiration research has no mandatory browser, screenshot or visual-probe step. Review of a generated design does require passing its actual images to the peer. It passes original inputs, detailed observations and any useful artifacts to the peer, which forms its own assessment. Describe honestly what each model actually inspected. Follow [design exploration](references/design-exploration.md) when a visual proposal is needed. This narrow exception does not expand critique, adjudication, build or QC. The owner's direct instruction still overrides the product runtime restriction as AGENTS.md states.
 - **Reading has a ceiling.** The repo's own source is read freely; that is what the plan is grounded in. A third-party package under `node_modules` is read only for its public contract: the option names, signatures, and types in its `.d.ts` files and its shipped README or docs, to confirm that a name the plan cites exists and what shape it takes. Never read a package's built or minified output (`dist/*.js`, `*.min.js`, `*.cjs`, `*.mjs`), never trace how a package behaves at runtime, never chase one identifier from one grep into the next. If confirming a single fact takes more than three tool calls, stop: it is not a planning fact, it is a build-time check (next rule).
 - **A runtime question is a plan step, not a research project.** When the brief describes a runtime symptom (something "reports disabled", "does not appear", "fires twice"), or asks to "validate", "verify", "confirm", or "determine why" something happens when the app runs, do not settle it here. Write it into the detailed plan as a named check the build performs first (what to look at, the candidate causes, what the build does in each case) and, where it is user-visible, as an acceptance journey the owner walks. Wording in the owner's brief asking for validation does not override this: the plan carries the check, the build proves it, QC confirms it.
 - **Owner-stated facts are given.** Anything the brief lists as already established (a dashboard setting, an observed status, a decision) is not re-verified here; it is quoted into the plan as a premise. The owner's description of the gap IS the gap: do not re-diagnose what they already diagnosed; take it as the starting point and plan the fix. Verify the code, not the owner.
 
 ## 1. Talk it through
 
-First complete the independent scope assessment and exchange in the pair protocol, using only the owner's request and shared facts. Then discuss the idea with the owner in plain product language. Every message in this step is short and product-shaped: what the owner asked for restated in one or two sentences, at most three one-line points that change it (each as "what it means for you, what we'd do"; no file names, no option names, no mechanism talk), and one yes/no question; then end the turn. If the owner does not understand, answer in the same shape, shorter, never longer. If the idea is a tangle of several things, the first job is cutting it into separate slices and agreeing with the owner on exactly ONE slice for this round, the rest wait for their own round later. Do not move on until one slice is clear.
+First preserve the owner's original messages and references, including uncertainty and later corrections, as the protocol requires. Both models independently investigate relevant evidence and interpret the intended outcome before proposing a scope or creative direction. References can express taste, mood, interaction or an aspiration; they are not automatically a request to copy a layout or approved design. Do not turn an uninvestigated assumption into an exclusion. Exchange the independent assessments, then discuss the recommendation and real open choices with the owner in concise product language. Briefly say what the peer contributed or challenged. Ask only useful questions, not a fixed yes/no template. Help the owner discover what they want when they cannot yet specify it. Agree one coherent slice without arbitrarily shrinking the request before understanding it.
 
-**UI checkpoint:** if the slice has any user-facing surface (a screen, a panel, a Slack message layout, an email), explicitly ASK the owner, as its own question: "Do you want to provide the design for this (v0 export, Block Kit JSON, a screenshot), or should it be derived from the app's existing design system?" Never assume either answer. The owner's choice is recorded as a line in "The decisions" once the plan is drafted ("look provided by owner" or "look derived from the existing design system"), and if they choose to provide one, wait for the artifact before moving on. This also decides whether the `ui` bundle below applies.
+**UI direction:** Establish whether the owner supplied an approved design, supplied inspirations to explore, wants a generated design, or wants ordinary UI work using the existing system. Honor answers already given. UI work does not automatically require an expensive design generation. Read the optional path below only when a new visual proposal is needed. Record the resulting design source in the plan's decisions.
 
 At the end of this step, pick the skill bundles this slice touches from the table in step 3: web, ui, data, ai, slack, workers (web and data apply to almost every slice; web carries the PostHog instrumentation skills for analytics, error tracking, and feature flags, ai carries PostHog LLM analytics). There is also ONE `free` bundle for a skill this slice needs that should not be loaded globally (an env-hygiene task wanting `vercel:env-vars`, say): name the exact skill names for it, checked against `ListSkills` so nothing is invented, at most a handful. Say the bundles (and the free skills, if any) to the owner in one line; the owner may veto or add. Do not move to writing the plan until one slice and its bundles are agreed.
+
+### 1.1 Optional design proposal
+
+When design generation is proposed, follow [design exploration](references/design-exploration.md): agree the direction with the peer, explicitly ask the owner whether to generate it, then generate once, get the peer's visual review, resolve material objections with at most one agreed revision, show the actual result, and STOP for the owner's approval. These are separate approvals: permission to generate is not approval of the generated design or permission to create an issue. The owner can decline generation and continue with ordinary planning. Do not require this path for every UI change.
 
 ## 2. Draft the plan (plain language)
 
@@ -92,7 +96,7 @@ Show the owner this document, then END YOUR TURN and wait. They read it, push ba
 
 ## 5. Write the detailed plan (technical, inline, owner never reads it)
 
-After approval, use the Fable + Astra detail phase and write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. No code, no snippets: build writes all of that once, from this document.
+After approval, use the Fable + Astra detail phase and write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. When it refers to the approved plain plan or to itself, use the post-rename names `.feature/plan-<N>-owner.md` and `.feature/plan-<N>.md` (step 8 renames `plan-owner.md` and `plan-draft.md` to those; on 2026-09-05 a plan that cited `.feature/plan-owner.md` stopped the build at its first step because the file no longer existed under that name); `<N>` is unknown until the issue exists, so write the placeholder and let step 8's rename step also substitute the real number. No code, no snippets: build writes all of that once, from this document.
 
 It has EXACTLY these parts, in this order, with these headings, because each later stage reads specific parts and nothing else:
 
@@ -106,9 +110,9 @@ After both partners verify the combined plan, write that combined result to `.fe
 
 ### 5.1 UI slices, including UI the owner brings in
 
-When the slice touches any UI, the detailed plan grounds its visual decisions in root `DESIGN.md` (the binding visual contract) and may query the `ui-ux-pro-max` skill for citable UX rules; new UI aligns to the app's existing aesthetic, never a freshly invented one.
+When the slice touches UI, ground it in `DESIGN.md` and any owner-approved visual proposal. The existing system is the default; an explicitly approved new visual direction can override it for the named surface. Record that scope and any required design-contract update in the plan, without silently restyling the rest of the product.
 
-The owner may hand over ready-made UI: code exported from v0 or a design tool, Block Kit JSON from Slack's builder, or a screenshot of a design they want. Treat that artifact as a DECIDED input, not a suggestion: save it verbatim to `.feature/ui-<short-name>.<ext>`, reference that file path in the detailed plan as the base the build adapts (restyled to `DESIGN.md` tokens where they conflict, structure preserved), and note in the plan's "The decisions" section, in plain words, that the look comes from the owner's provided design. The critique lanes may attack how it's wired in, never relitigate the owner's visual choice.
+Preserve supplied UI exports and generated proposals under `.feature/` and reference their exact versions in the detailed plan. Only an artifact the owner explicitly selected as the design is a decided input. Inspiration links, examples, drafts and permission to generate remain exploratory. Once approved, preserve the visual choice and record its relation to `DESIGN.md`; critique may challenge implementation, not reopen the owner's chosen look.
 
 ### 5.2 Vendor init: the reference-init diff
 
@@ -172,7 +176,8 @@ Show the owner, in this order, and nothing else:
 1. Read `.feature/plan-owner.md` fresh off disk and paste it whole, verbatim, as the very first thing in the message, before any remark about the run. This is the only re-emission of the plan anywhere in this skill.
 2. The **`whatChanged`** list, as Added/Changed/Removed one-liners, each with its reason.
 3. Any **`openQuestionsForOwner`**, each phrased as a plain question with the tradeoff in one sentence.
-4. One closing line: each lane's elapsed seconds (from the DONE lines in step 6.3) and any dead lane named plainly. A lane that returned `NO_FINDINGS` is reported like any other lane that worked ("nothing found"), never as a lane that did not come back. Nothing else about lanes, counts, findings, or drops belongs in this message.
+4. Build handoff: "Approve this plan to create the issue and start the build with Sol High. Say Astra or Terra if you prefer, or tell me to leave the build for you to launch." This is part of the final plan approval, not another question afterward.
+5. One closing line: each lane's elapsed seconds (from the DONE lines in step 6.3) and any dead lane named plainly. A lane that returned `NO_FINDINGS` is reported like any other lane that worked ("nothing found"), never as a lane that did not come back. Nothing else about lanes, counts, findings, or drops belongs in this message.
 
 If the owner asks what was dropped, read `.feature/critique-dispositions.md` and answer in plain words; never volunteer it unasked.
 
@@ -198,27 +203,23 @@ Once the owner says yes to the revised plan:
 
    The script prints the new issue number on stdout; everything else goes to stderr. It lands the working tree on `ft/<N>` from `beta`.
 
-3. Add the `feature` label (the start script does not set labels):
-
-   ```bash
-   gh issue edit <N> --add-label feature
-   ```
-
-4. Rename the working files so they're tied to the real issue number:
+3. Rename the working files so they're tied to the real issue number, then substitute the number for the `<N>` placeholder inside the detailed plan and check no pre-rename filename survives:
 
    ```bash
    mv .feature/plan-draft.md .feature/plan-<N>.md
    mv .feature/plan-owner.md .feature/plan-<N>-owner.md
+   sed -i '' 's/plan-<N>/plan-'<N>'/g' .feature/plan-<N>.md
+   rg -n "plan-owner\.md|plan-draft\.md" .feature/plan-<N>.md && echo "STALE REFERENCE: fix before handoff"
    ```
 
-## 9. End: name the next command
+## 9. Launch the approved build, then stop
 
-The last act before the closing message: run `git branch --show-current` and confirm it prints `ft/<N>` (or `bf/<N>`); if anything in this session left the tree parked elsewhere, switch back now. The build stage reads skills and plans from the checked-out branch, so a handoff that names `$build <N>` (or `/build <N>`) while the repo sits on another branch hands it the wrong world (happened 2026-08-23: a mid-session detour left the repo on beta at handoff).
+Follow [the build handoff](references/build-handoff.md). Verify that `start.sh` left the checkout on `ft/<N>` or `bf/<N>` and that the final local plan files exist. Honor the build model explicitly requested with approval; otherwise use Sol High, regardless of the planning partner. If the owner asked to launch manually or later, simply name `$build <N>` and stop.
 
-Do not dispatch, build, or run anything else. Close with a short summary (issue number, branch, one line on what changed in the critique round) and tell the owner the next command is `$build <N>` in Codex or `/build <N>` in Claude Code, on this repo.
+Otherwise launch once, register the background completion watcher where available, report the real launch status, and STOP. No polling or further planning work while build runs. The completion callback only relays the build result and its next command; it never launches QC or ship.
 
 <exit-example>
 
-Issue #123 created, `ft/123` cut. The critique round tightened the retry cap and added an owner decision about batching. When you're ready: `$build 123` in Codex, or `/build 123` in Claude Code.
+Issue #123 created on `ft/123`. The approved build has started with Sol High. I'll report its result when it finishes.
 
 </exit-example>

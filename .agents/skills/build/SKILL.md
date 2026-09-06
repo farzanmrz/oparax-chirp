@@ -1,11 +1,11 @@
 ---
 name: build
-description: "Build (or fix) an oparax feature slice on its ft/<N> branch from the issue's detailed plan. Use only when the owner explicitly types $build <N> in Codex. Two modes, picked automatically: BUILD mode implements the detailed plan's build steps and commits once; FIX mode applies the fix list the Claude Code /qc round left in .feature/fixes-<N>.md, runs tsc, commits, posts the QC round marker, and ends with a plain walk-through of what the owner checks before /ship. Never invoke automatically during other work."
+description: "Build (or fix) an oparax feature slice on its ft/<N> branch from the issue's detailed plan. Use when the owner explicitly types $build <N> or an owner-approved feature/QC handoff launches that command through Codex CLI. Two modes, picked automatically: BUILD mode implements the detailed plan's build steps and commits once; FIX mode applies the fix list the Claude Code /qc round left in .feature/fixes-<N>.md, runs tsc, commits, posts the QC round marker, and ends with a plain walk-through of what the owner checks before /ship. Never invoke automatically during other work."
 ---
 
 # Build: one Codex session, one branch, one commit, then stop
 
-You are the build stage of the oparax feature flow. The owner typed `$build <N>` and is watching this session; they are a technical AI engineer who does not read TypeScript or Next.js, so every message to them is plain product language. This skill builds (or fixes) and STOPS. It never runs journeys, gates, servers, deploys, or reviews; those belong to `/qc` in Claude Code and to the owner.
+You are the build stage of the oparax feature flow. The owner requested `$build <N>` directly or approved its launch from feature/QC; they are a technical AI engineer who does not read TypeScript or Next.js, so every message to them is plain product language. This skill builds (or fixes) and STOPS. It never runs journeys, gates, servers, deploys, or reviews; those belong to `/qc` in Claude Code and to the owner.
 
 ## 1. Confirm the branch and read the local plan
 
@@ -33,6 +33,7 @@ Read ONLY parts 1 and 2 of the detailed plan (Files and contracts, Build steps),
 
 Rules while building:
 
+- **Subagents:** Feel free to use subagents for useful independent work inside the approved scope. Assign clear file ownership, tell them they share the checkout and must preserve others' edits, and review their results before the single final commit. They do not switch branches, commit independently, or trigger another workflow stage.
 - **Stay inside the plan.** Implement the numbered build steps in order, in the named files. If reality diverges from the plan beyond nuance (a named file or function is not where the plan says, a contract cannot be met as written, a tool it names does not exist), STOP at that step, leave the tree as it is, and tell the owner plainly which step and why. Never improvise around a blocker, never substitute a different approach.
 - **Skills:** per step, invoke exactly the skills that step names by `$name` (`$vercel:nextjs`, `$supabase:supabase`, `$posthog:instrument-integration`, `$use-railway`, ...) and no others.
 - **Migrations go through the Supabase MCP only.** There is no Supabase CLI on this machine; do not look for one, do not run `supabase ...`. Call `apply_migration` with the SLUG ONLY as the name (the version is stamped remotely), then mirror the exact SQL into `supabase/migrations/<utc-timestamp>_<slug>.sql` with a `-- Applied via the Supabase MCP server` header comment, and regenerate `lib/supabase/database.types.ts` with `generate_typescript_types` when the schema changed. Applying to the one shared project during build is the standing convention; never ask about migration timing or preview branches.
@@ -116,6 +117,6 @@ here in Codex (or `/ship <N>` in Claude Code, same skill), after they have walke
 
 ## Hard rules
 
-- The owner triggers every stage; you never run `/qc`, `/ship`, or another `$build`.
+- **Stage boundary:** This build is authorized directly or by approved feature/QC handoff. Never run `/qc`, `/ship`, or another `$build` yourself.
 - Anything failing twice for the same reason: report it verbatim and stop; do not thrash.
 - Never claim COMPLETE with a step half-built or a file untouched; say exactly what is done and what is not.
