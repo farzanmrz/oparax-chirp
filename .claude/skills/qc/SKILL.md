@@ -7,10 +7,12 @@ description: >-
   checks plan coverage and runs the gates, launches five review lanes
   in the background (two Codex, two agy, grok), does its own holistic review of
   the real diff while they run, then folds every set of findings into one fix list written to
-  .feature/fixes-<N>.md for build's fix mode, presents them for owner approval, then launches Codex build on approval.
-  No Workflow tool, no subagents. Use when the user says /qc <N>. Not for
-  building or fixing; both are $build in Codex or /build in Claude Code.
-argument-hint: "[issue #]"
+  .feature/fixes-<N>.md for build's fix mode, tells the owner what is queued, and launches the
+  Codex fix build itself without waiting: Sol High by default, Astra or Terra when the /qc
+  invocation names one. No Workflow tool, no subagents. Use when the user says /qc <N>
+  (optionally /qc <N> astra or /qc <N> terra). Not for building or fixing; both are $build in
+  Codex or /build in Claude Code.
+argument-hint: "[issue #] [sol|astra|terra]"
 allowed-tools: Bash(git *) Bash(gh *) Bash(bash *) Bash(python3 *) Monitor Write Read Edit Grep Glob
 model: inherit
 disable-model-invocation: true
@@ -18,11 +20,11 @@ disable-model-invocation: true
 
 # QC: review what build built, hand the fix list back to build
 
-One session, start to finish. Every step below runs on its own; the owner types nothing between `/qc <N>` and the final message. This skill never builds, never applies findings, never runs journeys; when fixes exist it presents them, waits for approval, launches Codex build and stops; with no fixes it names `/ship <N>`.
+One session, start to finish. Every step below runs on its own; the owner types nothing between `/qc <N>` and the final message. This skill never builds, never applies findings, never runs journeys; when fixes exist it writes them, tells the owner what is queued, launches the Codex fix build in the same breath (no approval stop; owner decision 2026-09-06) and stops; with no fixes it names `/ship <N>`. The fix build runs on Sol High unless the `/qc` invocation itself named Astra or Terra (`/qc 132 astra`); the owner chooses the model when they trigger QC, never in a question afterwards.
 
 ## Working style, every step of this command
 
-- **This run is autonomous.** The owner is not answering questions mid-run, so never end a turn to ask one; the only mid-run stops are the STOP conditions written into the steps below (wrong branch, unapplied fixes, a missing or half-built step, a non-mechanical red gate), each of which ends the run with a plain blocker. Before ending any turn, reread your last paragraph: if it is a plan, an analysis, or a promise about work not yet done ("I'll..."), do that work now with tool calls. End only on a STOP or on the final owner-approval checkpoint. After approval, perform only the step-9 launch and stop again.
+- **This run is autonomous.** The owner is not answering questions mid-run, so never end a turn to ask one; the only mid-run stops are the STOP conditions written into the steps below (wrong branch, unapplied fixes, a missing or half-built step, a non-mechanical red gate), each of which ends the run with a plain blocker. Before ending any turn, reread your last paragraph: if it is a plan, an analysis, or a promise about work not yet done ("I'll..."), do that work now with tool calls. End only on a STOP or after the step-9 launch (or the no-fixes closing message).
 - **Claim only what you can point to.** Every statement in the final message rests on a tool result from this run: the diff you read, a gate's output, a lane's state line. If tests or gates failed, say so with what they printed; if something was skipped or is unverified, say that; what is done and verified is stated plainly without hedging.
 - **The fix list stays minimal.** A fix item corrects exactly what its finding names: no surrounding cleanup, no refactors, no abstractions or defenses for scenarios that cannot happen. The simplest change that resolves the finding is the fix.
 - **The owner reads product language, not a terminal.** The step-8 message leads with the outcome in complete plain sentences; no arrow chains, no shorthand or names invented mid-run, no vocabulary from the working thread. Short versus clear, choose clear.
@@ -39,7 +41,7 @@ Expect `ft/<N>` (or `bf/<N>`). If not, `git fetch origin ft/<N> && git switch ft
 git status --short && git log --oneline origin/beta..HEAD
 ```
 
-If there are no commits ahead of beta touching app code, STOP and tell the owner to run `$build <N>` in Codex (or `/build <N>` in Claude Code) first. If there are uncommitted changes, say so and STOP; the tree should be exactly what build committed.
+If there are no commits ahead of beta touching app code, STOP and tell the owner to run `$build <N>` in Codex (or `/build <N>` in Claude Code) first. If the only uncommitted paths are under `.claude/` or `.codex/` (tool configuration written mid-flow), commit them on this branch now and push: `git add -A -- .claude .codex && git commit -m "meta: commit tool configuration under .claude and .codex (#<N>)" && git push -u origin ft/<N>` (owner decision 2026-09-06; the build launcher applies the same rule, so these files never block a launch). Any other uncommitted change: say so and STOP; the tree should be exactly what build committed.
 
 ## 2. Read the issue, put the contract on disk
 
@@ -85,7 +87,7 @@ Meta and process paths are excluded on purpose and are never fix material.
 1. **Coverage.** Run `git diff origin/beta...HEAD --stat` (with the same excludes) and the full diff, and read any changed file whose diff is not self-explanatory. Compare against `.feature/lanes/qc-plan.md`, parts `## 1. Files and contracts` and `## 2. Build steps` ONLY, as amended by the appended block (a contract an amendment changed is judged against the amendment, never listed as missing). Parts 3 and 4 are for the owner and for ship; never grade the diff against them. If a build step is a reference-init diff (vendor skill's reference init vs our init call), redo it yourself the same bounded way: the skill's snippet and our call, one list of option names the reference sets that ours does not, each either present in the code or covered by a recorded decision; an uncovered one is a finding. No third read. If a build step is missing or half-built, STOP here: tell the owner plainly which step and what is missing, do not run gates on a partial build, do not write a fix list, do not post a marker; the fix is a `$build <N>` in Codex (or `/build <N>` in Claude Code) after the plan or the build is corrected, or a word to you if they want the gap looked at first.
 2. **Gates.** `bash .claude/scripts/qc-gates.sh` (pnpm build + tsc; use a Bash timeout of 600000; measured 10 to 12 seconds on a warm cache, up to a few minutes cold). GREEN: continue. RED: fix ONLY what the compiler or typechecker actually reports, and only mechanically (a type, an import, a missing await; no design or behavior changes, no new files), rerun until GREEN, then `git add -A && git commit -m "gates: <one line> (#<N>)"`. If the red is not mechanical (a real defect, a missing piece of the build), discard the partial attempt with `git checkout -- .` and STOP with a plain-language blocker for the owner.
 
-Never start a dev server, never run pnpm dev or the poller, never touch env files, never open a browser or use any browser/computer-use tool, never write to git except the one `gates:` commit above. This binds the command while it runs; if the owner asks in their own words in the chat to run the app or open a browser, that wins immediately (AGENTS.md).
+Never start a dev server, never run pnpm dev or the poller, never touch env files, never open a browser or use any browser/computer-use tool, never write to git except the one `gates:` commit above and the step-1 `meta:` commit for `.claude/` and `.codex/` files. This binds the command while it runs; if the owner asks in their own words in the chat to run the app or open a browser, that wins immediately (AGENTS.md).
 
 ## 5. Launch the five review lanes, then review in parallel
 
@@ -183,12 +185,10 @@ No code terms, no raw findings, no file paths, no finding counts, no drop counts
 - **Open questions:** each as a plain question with its tradeoff in one sentence.
 - **One closing line:** each lane's elapsed seconds from its DONE line, and "the <lane> review pass did not come back" for any dead lane (a lane whose state was `INVALID`, `FAILED`, or `TIMED_OUT` and whose resume attempt did not produce a valid payload). A `NO_FINDINGS` lane came back and found nothing: report it like any other working lane and never use the did-not-come-back wording for it. A dead lane never stops the run. If the owner asks what was dropped, read `.feature/qc-dispositions.md` and answer in plain words; never volunteer it.
 
-## 9. Approve fixes, launch build, then stop
+## 9. Launch the fix build, then stop
 
-With fixes queued, finish the presentation with: "Approve these fixes to apply them with Sol High. Say Astra or Terra if you prefer, or tell me to leave the build for you to launch." STOP for the owner's approval. A `/qc` invocation alone is not approval of findings that were not yet presented. If the owner changes the fix list, update it before dispatch.
+With fixes queued, do not wait for approval (owner decision 2026-09-06: the `/qc <N>` invocation is the standing approval to apply whatever the round queues). Finish the step-8 presentation with one line naming the model about to run, then in the same turn follow [the build handoff](../feature/references/build-handoff.md) with `--source qc` and `--model <m>`, where `<m>` is `astra` or `terra` only when the `/qc` invocation's second argument named it (case-insensitively), and `sol` (Sol High) otherwise. Never inherit the feature planning model or an earlier build's override, and never ask a model question. The same `$build <N>` command picks FIX or AMEND mode using its existing rules.
 
-After approval, follow [the build handoff](../feature/references/build-handoff.md), using `--source qc`. Default to Sol High for this fix run unless the owner explicitly selects another build model; do not inherit the feature planning model or a previous build override. The same `$build <N>` command picks FIX or AMEND mode using its existing rules. No separate model question is needed.
-
-Launch once, register the background completion watcher where available, tell the owner which model started, and STOP. Claude does not apply the fixes itself or poll progress. On completion, relay the actual result and the build skill's walkthrough/next command, then stop; do not auto-launch another QC round or ship.
+Launch once, register the background completion watcher where available, tell the owner which model started, and STOP. Claude does not apply the fixes itself or poll progress. On completion, relay the actual result and the build skill's walkthrough/next command, then stop; do not auto-launch another QC round or ship. If the launcher refuses (wrong branch, another build running, uncommitted files outside `.claude/` and `.codex/`), report that refusal as the blocker in plain words and stop; the fix list stays pending for a manual `$build <N>`.
 
 With no fixes: there is no fix round to carry the walk-through, so this message carries it, in the same three-block shape `$build`'s fix mode uses: **Do this now** (the single shortest walk that proves what this branch or this round changed, five numbered steps at most, plain words, ending with the one-word reply to give), **Then, only if that passed** (the remaining acceptance journeys this round touched, each as its own short walk; journeys already walked in an earlier round and untouched since are named in one line, not repeated), **At ship** (part 4 as a short checklist). Then `/ship <N>`. Do not launch build when there are no fixes. Never auto-dispatch ship or another QC round.

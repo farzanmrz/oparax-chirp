@@ -96,7 +96,7 @@ Show the owner this document, then END YOUR TURN and wait. They read it, push ba
 
 ## 5. Write the detailed plan (technical, inline, owner never reads it)
 
-After approval, use the Fable + Astra detail phase and write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. No code, no snippets: build writes all of that once, from this document.
+After approval, use the Fable + Astra detail phase and write the host's independent detailed version of the same plan into a private file in the pair working directory. Run the independent detail round and exchange from the pair protocol; the peer writes its own complete plan from the same approved requirements before seeing yours. It is for the build stage (`$build <N>` in Codex, or `/build <N>` in Claude Code) and the critique lanes only; the owner is never shown it and never asked to approve it. Ground it in the real code (real paths, real names) and flag missing information instead of guessing. When it refers to the approved plain plan or to itself, use the post-rename names `.feature/plan-<N>-owner.md` and `.feature/plan-<N>.md` (step 8 renames `plan-owner.md` and `plan-draft.md` to those; on 2026-09-05 a plan that cited `.feature/plan-owner.md` stopped the build at its first step because the file no longer existed under that name); `<N>` is unknown until the issue exists, so write the placeholder and let step 8's rename step also substitute the real number. No code, no snippets: build writes all of that once, from this document.
 
 It has EXACTLY these parts, in this order, with these headings, because each later stage reads specific parts and nothing else:
 
@@ -203,11 +203,13 @@ Once the owner says yes to the revised plan:
 
    The script prints the new issue number on stdout; everything else goes to stderr. It lands the working tree on `ft/<N>` from `beta`.
 
-3. Rename the working files so they're tied to the real issue number:
+3. Rename the working files so they're tied to the real issue number, then substitute the number for the `<N>` placeholder inside the detailed plan and check no pre-rename filename survives:
 
    ```bash
    mv .feature/plan-draft.md .feature/plan-<N>.md
    mv .feature/plan-owner.md .feature/plan-<N>-owner.md
+   sed -i '' 's/plan-<N>/plan-'<N>'/g' .feature/plan-<N>.md
+   rg -n "plan-owner\.md|plan-draft\.md" .feature/plan-<N>.md && echo "STALE REFERENCE: fix before handoff"
    ```
 
 ## 9. Launch the approved build, then stop

@@ -13,6 +13,10 @@ import uuid
 
 MODELS = {'sol': 'gpt-5.6-sol', 'astra': 'gpt-6-astra', 'terra': 'gpt-5.6-terra'}
 ACTIVE = {'STARTING', 'RUNNING'}
+# Tool configuration written mid-flow (Codex or Claude settings, hooks, skills) is committed and
+# pushed on the current branch instead of refusing the launch (owner decision 2026-09-06, after
+# an untracked .codex/config.toml blocked the #132 fix build). Anything outside these still refuses.
+META_PREFIXES = ('.claude/', '.codex/')
 
 
 def write_state(job, state):
@@ -43,6 +47,20 @@ def git(repo, *args):
     return subprocess.check_output(['git', '-C', str(repo), *args], text=True).strip()
 
 
+def commit_tool_config(repo, issue, branch):
+    entries = git(repo, 'status', '--porcelain', '--untracked-files=all').splitlines()
+    paths = [line[3:].split(' -> ')[-1].strip('"') for line in entries if line.strip()]
+    if not any(path.startswith(META_PREFIXES) for path in paths):
+        return
+    git(repo, 'add', '-A', '--', *META_PREFIXES)
+    git(repo, 'commit', '-m', f'meta: commit tool configuration under .claude and .codex (#{issue})')
+    pushed = subprocess.run(['git', '-C', str(repo), 'push', '-u', 'origin', branch],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    if pushed.returncode:
+        print(json.dumps({'warning': f'Committed tool configuration on {branch} but could not push it; push manually.'}),
+              file=sys.stderr)
+
+
 def prepare(repo, issue, source):
     plan = repo / f'.feature/plan-{issue}.md'
     if not plan.is_file() or not plan.read_text().strip():
@@ -53,11 +71,12 @@ def prepare(repo, issue, source):
         fixes = repo / f'.feature/fixes-{issue}.md'
         if not fixes.is_file() or 'Status: pending' not in fixes.read_text().splitlines():
             raise ValueError('QC handoff requires the approved pending fix list.')
-    if git(repo, 'status', '--porcelain', '--untracked-files=all'):
-        raise ValueError('Uncommitted files remain. Preserve and resolve them before launching build.')
     branch = git(repo, 'branch', '--show-current')
     if branch not in (f'ft/{issue}', f'bf/{issue}'):
         raise ValueError(f'Checkout is {branch or "detached"}; switch to ft/{issue} or bf/{issue} before launch.')
+    commit_tool_config(repo, issue, branch)
+    if git(repo, 'status', '--porcelain', '--untracked-files=all'):
+        raise ValueError('Uncommitted files remain outside .claude/ and .codex/. Preserve and resolve them before launching build.')
     return branch
 
 
