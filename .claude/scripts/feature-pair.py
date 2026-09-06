@@ -22,11 +22,13 @@ SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}},
           "required": ["answer"], "additionalProperties": False}
 MODELS = {'fable': 'claude-fable-5', 'sol': 'gpt-5.6-sol', 'astra': 'gpt-6-astra'}
 PHASES = {'scope': 'sol', 'plain': 'sol', 'detail': 'astra',
-          'adjudication': 'sol', 'redesign': 'astra'}
+          'design-review': 'sol', 'adjudication': 'sol', 'redesign': 'astra'}
+RESEARCH_PHASES = {'scope', 'plain', 'design-review'}
 RULES = """You are the independent peer in /feature, not its coordinator.
 Do only the assignment below. Do not invoke /feature or another workflow.
-Read repository source as needed, but do not change code, git, services or data.
-Do not run the app, browsers, tests or builds. No subagents or external writes.
+Read repository source as needed, but do not change repository files, git,
+external services or product data.
+Do not run the product app, tests or builds. No subagents or external writes.
 Only read third-party public types and docs, never built package internals.
 Do not inspect .feature/, other agent sessions, logs, transcripts or drafts.
 All authorized planning inputs are supplied below; only explicitly named shared
@@ -34,8 +36,27 @@ reference files may be read in addition to source. Do not search for your peer's
 answer. Until the EXCHANGE message, form your own answer without seeing theirs.
 Owner decisions are binding; assistant proposals are not owner decisions.
 Return the requested work in the `answer` field of the output JSON schema.
-Use no em dashes. For factual objections cite repository file:line evidence.
+Use no em dashes. Cite source paths, URLs or observed visual states for facts.
 """
+
+
+def rules(state):
+    if state['phase'] in RESEARCH_PHASES:
+        research = ('Independently research the supplied references before recommending a direction. '
+                    'Web search and retrieval are allowed. Use the original owner input, detailed '
+                    'reference observations and any supplied artifacts to form your own view. '
+                    'Do not launch browsers, install tools or probe browser capabilities here. '
+                    'Ask the coordinator for missing substantive details in one batch if needed. '
+                    'Distinguish direct observations from its interpretations and challenge unsupported '
+                    'assumptions. State whether your assessment is based on descriptions, source or '
+                    'actual images; do not claim to have seen a page you have not seen. Do not let the coordinator\'s '
+                    'interpretation replace the original owner input or references.\n')
+    else:
+        research = 'Do not run browsers or previews in this phase.\n'
+    images = state.get('images', [])
+    visual = ('Shared image files (read these directly; attached to Codex calls):\n' +
+              '\n'.join(str(Path(state['run']) / p) for p in images) + '\n') if images else ''
+    return RULES + research + visual
 
 
 def read_text(path):
@@ -52,7 +73,32 @@ def write_json(path, value):
 
 
 def digest(text):
-    return hashlib.sha256(text.encode()).hexdigest()
+    return hashlib.sha256(text.encode() if isinstance(text, str) else text).hexdigest()
+
+
+def image_inputs(paths):
+    images = []
+    for value in paths:
+        path = Path(value).resolve()
+        if path.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
+            raise ValueError(f'Use a rendered PNG, JPEG or WebP image: {path}')
+        data = path.read_bytes()
+        if not data:
+            raise ValueError(f'Empty image: {path}')
+        images.append((path.suffix.lower(), data))
+    return images
+
+
+def save_images(run, state, images):
+    if not images:
+        return
+    names = []
+    for index, (suffix, data) in enumerate(images):
+        name = f'image-{state["turn"]}-{index}{suffix}'
+        (run / name).write_bytes(data)
+        state['sealed'][name] = digest(data)
+        names.append(name)
+    state['images'] = names
 
 
 @contextlib.contextmanager
@@ -65,7 +111,7 @@ def locked(run):
 def load(run):
     state = json.loads((run / 'state.json').read_text())
     for name, expected in state['sealed'].items():
-        if digest(read_text(run / name)) != expected:
+        if digest((run / name).read_bytes()) != expected:
             raise ValueError(f"Sealed input changed: {name}. Start a new round.")
     return state
 
@@ -109,11 +155,12 @@ def refresh(run, state):
 def report(state):
     # Deliberately no answer, raw log or sealed draft paths in progress output.
     print(json.dumps({k: state.get(k) for k in
-                      ('status', 'phase', 'peer', 'model', 'turn', 'session_id', 'error', 'deadline')}))
+                      ('status', 'phase', 'pair_model', 'peer', 'model', 'turn', 'session_id',
+                       'error', 'deadline')}))
 
 
-def peer_for(host, phase):
-    codex_partner = PHASES[phase]
+def peer_for(host, phase, pair_model='sol'):
+    codex_partner = 'astra' if PHASES[phase] == 'astra' else pair_model
     if host == 'fable':
         return codex_partner
     if host == codex_partner:
@@ -145,14 +192,22 @@ def command(run, state):
             cmd += ['resume', session]
         else:
             cmd += ['-s', 'read-only', '-C', state['repo']]
-        # Resume inherits the original read-only sandbox and working directory.
+        # Resume inherits the original sandbox and working directory.
         cmd += ['-m', MODELS[state['peer']], '-c', 'model_reasoning_effort="high"',
-                '--json', '--output-schema', str(run / 'schema.json'), '-']
+                '--json', '--output-schema', str(run / 'schema.json')]
+        if state['phase'] in RESEARCH_PHASES:
+            cmd += ['-c', 'web_search="live"']
+        for name in state.get('images', []):
+            cmd += ['--image', str(run / name)]
+        cmd += ['--', '-']
         return cmd
+    read_tools = 'Read,Glob,Grep'
+    if state['phase'] in RESEARCH_PHASES:
+        read_tools += ',WebFetch,WebSearch'
     cmd = ['claude', '--print', '--model', 'claude-fable-5', '--effort', 'high',
            '--output-format', 'json', '--json-schema', json.dumps(SCHEMA),
-           '--permission-mode', 'dontAsk', '--tools', 'Read,Glob,Grep',
-           '--allowedTools', 'Read,Glob,Grep', '--strict-mcp-config',
+           '--permission-mode', 'dontAsk', '--tools', read_tools,
+           '--allowedTools', read_tools, '--strict-mcp-config',
            '--mcp-config', '{"mcpServers":{}}', '--no-chrome']
     if session:
         cmd += ['--resume', session]
@@ -264,9 +319,12 @@ def main():
     start.add_argument('run')
     start.add_argument('--repo', required=True)
     start.add_argument('--brief', required=True)
+    start.add_argument('--owner-input', required=True, help='Unedited owner messages and corrections')
     start.add_argument('--host-draft', required=True)
     start.add_argument('--host', choices=list(MODELS), required=True)
     start.add_argument('--phase', choices=list(PHASES), required=True)
+    start.add_argument('--pair-model', type=str.lower, choices=['sol', 'astra'], required=True)
+    start.add_argument('--image', action='append', default=[])
     start.add_argument('--reason', help='Required for a substantial post-critique redesign')
     start.add_argument('--timeout', type=int, default=900)
     for name in ('status', 'exchange', 'cancel', '_run'):
@@ -277,6 +335,7 @@ def main():
     reply = subs.add_parser('reply')
     reply.add_argument('run')
     reply.add_argument('--message', required=True)
+    reply.add_argument('--image', action='append', default=[])
     args = parser.parse_args()
     run = Path(args.run).resolve()
     if args.cmd == '_run':
@@ -285,23 +344,30 @@ def main():
     if args.cmd == 'start':
         if not 1 <= args.timeout <= 900:
             raise ValueError('timeout must be between 1 and 900 seconds')
-        peer = peer_for(args.host, args.phase)
+        peer = peer_for(args.host, args.phase, args.pair_model)
         if args.phase == 'redesign' and not (args.reason or '').strip():
             raise ValueError('redesign requires --reason explaining the substantial design change')
         brief, draft = read_text(args.brief), read_text(args.host_draft)
+        owner_input = read_text(args.owner_input)
+        images = image_inputs(args.image)
         repo = Path(args.repo).resolve()
         if not repo.is_dir():
             raise ValueError('Repository directory is missing')
         run.mkdir(parents=True, exist_ok=False)
         (run / 'brief.md').write_text(brief)
         (run / 'host-draft.md').write_text(draft)
+        (run / 'owner-input.md').write_text(owner_input)
         write_json(run / 'schema.json', SCHEMA)
-        state = dict(repo=str(repo), host=args.host, phase=args.phase,
+        state = dict(repo=str(repo), run=str(run), host=args.host, phase=args.phase,
+                     pair_model=args.pair_model,
                      peer=peer, model=MODELS[peer], reason=args.reason,
                      session_id=None, turn=0, timeout=args.timeout,
-                     sealed={'brief.md': digest(brief), 'host-draft.md': digest(draft)})
+                     sealed={'brief.md': digest(brief), 'host-draft.md': digest(draft),
+                             'owner-input.md': digest(owner_input)})
+        save_images(run, state, images)
         with locked(run):
-            launch(run, state, RULES + '\nINDEPENDENT DRAFT\n' + brief)
+            launch(run, state, rules(state) + '\nORIGINAL OWNER INPUT\n' + owner_input +
+                   '\nINDEPENDENT ASSIGNMENT\n' + brief)
         return
     if args.cmd == 'wait':
         until = time.time() + args.seconds
@@ -334,16 +400,20 @@ def main():
         elif args.cmd == 'reply':
             if state['status'] != 'EXCHANGED':
                 raise ValueError('Exchange the completed answer before sending a reply')
-            if state['turn'] >= 3:
-                raise ValueError('Three exchanges used. Resolve remaining owner choices explicitly.')
+            limit = 2 if state['phase'] == 'design-review' else 3
+            if state['turn'] >= limit:
+                raise ValueError(f'{limit} follow-ups used. Bring remaining choices to the owner.')
             message = read_text(args.message)
+            images = image_inputs(args.image)
             if state['turn'] == 0:
                 message = 'Your peer independently wrote:\n' + read_text(run / 'host-draft.md') + '\n\n' + message
             state['turn'] += 1
+            state.setdefault('run', str(run))
+            save_images(run, state, images)
             name = f"message-{state['turn']}.md"
             (run / name).write_text(message)
             state['sealed'][name] = digest(message)
-            launch(run, state, RULES + '\nEXCHANGE\n' + message)
+            launch(run, state, rules(state) + '\nEXCHANGE\n' + message)
 
 
 if __name__ == '__main__':
