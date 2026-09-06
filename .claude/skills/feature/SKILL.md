@@ -203,13 +203,7 @@ Once the owner says yes to the revised plan:
 
    The script prints the new issue number on stdout; everything else goes to stderr. It lands the working tree on `ft/<N>` from `beta`.
 
-3. Add the `feature` label (the start script does not set labels):
-
-   ```bash
-   gh issue edit <N> --add-label feature
-   ```
-
-4. Rename the working files so they're tied to the real issue number:
+3. Rename the working files so they're tied to the real issue number:
 
    ```bash
    mv .feature/plan-draft.md .feature/plan-<N>.md

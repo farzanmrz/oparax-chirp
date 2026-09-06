@@ -6,19 +6,7 @@ Oparax is an AI news desk for people who follow the news and publish (reporters,
 
 ## How work moves
 
-Feature work moves through owner-triggered commands: `/feature` (Claude Code), `$build <N>` (Codex, build or fix mode), `/qc <N>` (Claude Code), `/ship <N>` (Claude Code, or `$ship <N>` in Codex: same skill file, exposed to both); `/amend <N>` (Claude Code) adds scope to an in-flight issue and re-enters the same loop. No stage auto-dispatches the next, and each session ends by naming the next command. What each command does, and what each stage is allowed to do, is defined in that command's skill file only; this file does not restate it. Work happens on `ft/<issue#>` branches cut from `beta`; the issue carries only what the owner reads (the approved plain plan, then one `## Amendment R` section per approved amendment) plus one QC marker per round; everything the agents read (the detailed plan `.feature/plan-<N>.md`, the detailed amendments `.feature/amend-<N>-<R>.md`, fix lists, lane output) lives in local `.feature/` files on this machine and is wiped at finalize. The owner walks the result on localhost before `/ship <N>` squashes to `beta`, and that squash closes the issue; branches are never deleted by any stage, the owner removes them by hand whenever they choose. `beta` reaches `main` (production) only through the weekly pull request `/promote` (or `$promote` in Codex) opens on the owner's word, reviewed by the owner's mentor as a training-plan requirement; ship never pushes `main`.
-
-Bug fixes run through the same commands. The `/feature` conversation starts from the broken behavior instead of a new idea: capture the exact repro first, then the plan's "What happens" section describes the corrected behavior and its acceptance journey IS the repro, re-proven. Branches use `bf/<issue#>` (the start script takes `--prefix bf`) and the issue gets the `bug` label. A trivial owner-reported fix can skip the critique workflow at the owner's word; everything else runs the full flow.
-
-Issues are labeled, and the label routes the work:
-
-| Label | Meaning | Flow |
-| --- | --- | --- |
-| `bug` | Existing behavior or data integrity is wrong | same commands, on `bf/<issue#>`: repro-first `/feature`, then `$build <N>`, `/qc <N>`, `/ship <N>` (`/amend <N>` inserts anywhere before `/ship` to add scope, then loops back into `$build <N>`) |
-| `feature` | New customer-facing capability | `/feature`, `$build <N>`, `/qc <N>`, `/ship <N>` (`/amend <N>` inserts anywhere before `/ship`, then loops back into `$build <N>`) |
-| `cleanup` | Removal, simplification, dead code | the feature flow above, minus the design/critique stages |
-| `meta` | Skills, agent workflow, repository process | direct on `beta` (owner-directed) |
-| `docs` | Documentation-only work | direct on `beta` |
+Work moves through owner-triggered commands, each defined only by its skill file: `/feature` (Claude Code) talks the idea through, writes the plain plan the owner approves and the detailed plan the agents read, runs the critique, and creates the GitHub issue and the `ft/<issue#>` branch cut from `beta`; `$build <N>` (Codex, or `/build <N>` in Claude Code) builds from the detailed plan; `/qc <N>` reviews; `/amend <N>` adds scope to an in-flight issue and loops back into build; `/ship <N>` (or `$ship <N>`) squashes the branch onto `beta` and closes the issue after the owner has walked the result on localhost. No stage dispatches the next; each session ends by naming the next command. The issue carries only what the owner reads (the plain plan and one `## Amendment R` section per approved amendment, plus a QC marker per round); everything the agents read lives in git-ignored `.feature/` files on this machine and is wiped at finalize. Bug fixes run the same commands on `bf/<issue#>` (the start script takes `--prefix bf`), starting from the exact repro, whose re-proof is the acceptance journey; a trivial owner-reported fix may skip critique at the owner's word. Meta and docs changes (skills, process, this file, documentation) go directly on `beta` at the owner's direction. `beta` reaches `main` (production) only through the weekly pull request `/promote` (or `$promote`) opens on the owner's word, reviewed by the owner's mentor; ship never pushes `main`, and no stage ever deletes a branch.
 
 - **Visual contract:** `DESIGN.md` is the default design system. An explicitly owner-approved new direction is recorded in the feature plan with the corresponding contract update scoped to that surface. Its "Marketing Surfaces" section governs the public landing page and any future marketing page.
 - **Frontend test login:** `testuser@oparax.ai` / `hello123`, an agentic-test-only dummy account; owner-requested browser login is pre-authorized.
@@ -167,7 +155,9 @@ Each is a standalone TypeScript package with its own `package.json`, lockfile, `
 
 Local run per worker, from its directory: copy `.env.example` to `.env.local` and fill values by hand; `pnpm install`; `pnpm run typecheck`; `pnpm run lint` (or `lint:fix`); `pnpm run dev` with the variables exported into the shell (it does not auto-load `.env.local`). Operators tail with `railway logs`.
 
-## Environment variables
+## Environment and commands
+
+App scripts (`package.json`): `pnpm dev` runs the app on localhost:3000 (owner only inside the flow), `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm lint:write`, `pnpm format` (Biome); `tsc --noEmit` typechecks. pnpm is the only allowed package manager (`preinstall` fails under npm or yarn); `pnpm-workspace.yaml` pins transitive versions for security advisories because pnpm 10 ignores `pnpm.overrides`. The flow's own scripts are documented in the skills that call them.
 
 Never commit values. `.env.local` at the repo root holds the app's local values (git-ignored); the workers keep their own. Names only:
 
@@ -191,17 +181,6 @@ poller (Railway): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_URL`, `IN
 
 ingest (Railway): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_URL`, `INGEST_SECRET`, `X_BEARER_TOKEN`, `INGEST_RULE_SYNC_INTERVAL_MS` (default 300000), `INGEST_LIVENESS_TIMEOUT_MS` (default 90000).
 
-## Commands
-
-- `pnpm dev` runs the app on localhost:3000 (owner only inside the flow). `pnpm build`, `pnpm start`. `pnpm lint`, `pnpm lint:write`, `pnpm format` (Biome). `tsc --noEmit` typechecks.
-- `bash .claude/scripts/qc-gates.sh [diff-range]`: the two hard QC gates (`pnpm build` and `tsc --noEmit`) plus a report-only Biome pass.
-- `bash .claude/scripts/start.sh [--prefix ft|bf] "<title>" [<plan-body-file>]`: creates the GitHub issue and lands the checkout on the branch; `--issue <N>` adopts an existing one.
-- `.claude/scripts/ship.sh <issue#> "<summary>"`: squashes the branch onto beta through a detached worktree, pushes, closes the issue; `--finalize <issue#>` wipes `.feature/`.
-- `bash .claude/scripts/lane.sh start|waitall|kill|findings <lane>`: runs an external reviewer CLI detached and extracts its findings JSON (`lane-findings.py`; self-test `lane-findings-test.py`).
-- `python3 .claude/scripts/feature-pair.py start|wait|status|exchange|reply <run>`: the sealed independent-draft-then-exchange protocol between Fable and a Codex peer.
-- `python3 .claude/scripts/build-launch.py`: launches an approved `$build` as a detached Codex process.
-- Package manager is pnpm only; `package.json`'s preinstall guard fails under npm or yarn. `pnpm-workspace.yaml` pins transitive versions for security advisories (pnpm 10 ignores `pnpm.overrides`).
-
 ## Tooling and configuration
 
 - **Biome** (`biome.json`) is the linter and formatter: 2-space indent, double quotes, 100-char lines, semicolons, organized imports. `components/ui/` and `components/ai-elements/` are excluded as vendored. Every Edit/Write is auto-formatted and safe-fixed by the PostToolUse hooks (`.claude/hooks/biome-write.sh`, `.codex/hooks/biome-write-codex.sh`); unsafe fixes are never applied automatically.
@@ -210,8 +189,8 @@ ingest (Railway): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `INGEST_URL`, `IN
 - **Tailwind v4** via `postcss.config.mjs` with `@tailwindcss/postcss` only; tokens live in `app/globals.css`.
 - **Fonts**: loaded once in `app/layout.tsx` through `next/font/google` (Hanken Grotesk 400 to 700, Space Grotesk 400/500, JetBrains Mono 400/500), self-hosted by Next at build.
 - **CI**: `.github/workflows/branch-name.yml` enforces branch names `main`, `beta`, `ft/<digits>`, `bf/<digits>`; a repo ruleset blocks off-convention branches at push time.
-- **Claude Code** (`.claude/settings.json`): skill overrides make the flow skills load by name only; `launch.json` defines the `oparax-dev` server config that stages must not start. `.claude/agents/supabase-runner.md` (Sonnet) and `.codex/agents/supabase-runner.toml` are the scoped database executors. `.codex/hooks/network-command-guard.sh` rejects network-lookup shell commands whose failure could look like an empty success.
-- **Records**: `docs/decisions.md` is the running list of standing product decisions (Built / Removed / Rejected / Direction). `docs/experiments/` holds the experiment template and `exp1.md`. `docs/biz/` holds the customer-discovery ledger.
+- **Agent tooling:** `.claude/` holds the Claude Code skills, scripts, hooks and the Sonnet `supabase-runner` agent; `.agents/` holds the host-shared skills; `.codex/` mirrors the hooks and the runner for Codex. `.claude/launch.json` defines the `oparax-dev` server config that stages must not start. Each stage's behavior lives in its skill file.
+- **Records:** `docs/decisions.md` is the running list of standing product decisions; `docs/experiments/` the experiment template and `exp1.md`; `docs/biz/` the customer-discovery ledger.
 
 ## Coding conventions
 
